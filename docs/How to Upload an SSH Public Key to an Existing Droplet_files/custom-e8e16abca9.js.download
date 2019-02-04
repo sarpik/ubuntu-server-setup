@@ -1,0 +1,261 @@
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var UnifiedMobileNavDropdown = function () {
+  function UnifiedMobileNavDropdown(_ref) {
+    var $popup = _ref.$popup,
+        $triggerClose = _ref.$triggerClose,
+        $triggerOpen = _ref.$triggerOpen;
+
+    _classCallCheck(this, UnifiedMobileNavDropdown);
+
+    this.$popup = $popup;
+    this.$triggerClose = $triggerClose;
+    this.$triggerOpen = $triggerOpen;
+  }
+
+  _createClass(UnifiedMobileNavDropdown, [{
+    key: '_open',
+    value: function _open() {
+      this.$popup.setAttribute('aria-hidden', false);
+      this.$popup.classList.add('is-open');
+    }
+  }, {
+    key: '_close',
+    value: function _close() {
+      this.$popup.setAttribute('aria-hidden', true);
+      this.$popup.classList.remove('is-open');
+    }
+  }, {
+    key: '_triggerOpenClicked',
+    value: function _triggerOpenClicked(event) {
+      this._open();
+    }
+  }, {
+    key: '_triggerCloseClicked',
+    value: function _triggerCloseClicked(event) {
+      this._close();
+    }
+  }, {
+    key: 'init',
+    value: function init() {
+      var _this = this;
+
+      this.$triggerOpen.addEventListener('click', function (event) {
+        return _this._triggerOpenClicked(event);
+      });
+      this.$triggerClose.addEventListener('click', function (event) {
+        return _this._triggerCloseClicked(event);
+      });
+    }
+  }]);
+
+  return UnifiedMobileNavDropdown;
+}();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var UnifiedNavDropdown = function () {
+  function UnifiedNavDropdown(_ref) {
+    var $component = _ref.$component,
+        $content = _ref.$content,
+        $trigger = _ref.$trigger;
+
+    _classCallCheck(this, UnifiedNavDropdown);
+
+    this.$component = $component;
+    this.$content = $content;
+    this.$trigger = $trigger;
+  }
+
+  _createClass(UnifiedNavDropdown, [{
+    key: '_handleMouseClick',
+    value: function _handleMouseClick(e) {
+      if (e.target.closest('[data-unified-nav-dropdown-content]') === null) {
+        this._close();
+      }
+    }
+  }, {
+    key: '_close',
+    value: function _close($dropdown) {
+      this.$content.classList.remove('is-open');
+
+      var afterEvent = new CustomEvent('do.unifiedNavDropdown.close');
+      this.$component.dispatchEvent(afterEvent);
+    }
+  }, {
+    key: '_open',
+    value: function _open() {
+      this.$content.classList.add('is-open');
+
+      var afterEvent = new CustomEvent('do.unifiedNavDropdown.open');
+      this.$component.dispatchEvent(afterEvent);
+    }
+  }, {
+    key: '_triggerClicked',
+    value: function _triggerClicked(event) {
+      event.preventDefault();
+
+      this._open();
+    }
+  }, {
+    key: 'init',
+    value: function init() {
+      var _this = this;
+
+      this.$component.addEventListener('do.unifiedNavDropdown.open', function () {
+        document.addEventListener('mouseup', function (event) {
+          return _this._handleMouseClick(event);
+        }, false);
+      });
+
+      this.$component.addEventListener('do.unifiedNavDropdown.close', function () {
+        document.removeEventListener('mouseup', function (event) {
+          return _this._handleMouseClick(event);
+        }, false);
+      });
+
+      this.$trigger.addEventListener('click', function (event) {
+        return _this._triggerClicked(event);
+      });
+    }
+  }]);
+
+  return UnifiedNavDropdown;
+}();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var UnifiedNavSearch = function () {
+  function UnifiedNavSearch(_ref) {
+    var $component = _ref.$component,
+        $trigger = _ref.$trigger,
+        $box = _ref.$box,
+        $close = _ref.$close,
+        $input = _ref.$input;
+
+    _classCallCheck(this, UnifiedNavSearch);
+
+    this.$component = $component;
+    this.$trigger = $trigger;
+    this.$box = $box;
+    this.$close = $close;
+    this.$input = $input;
+  }
+
+  _createClass(UnifiedNavSearch, [{
+    key: '_close',
+    value: function _close() {
+      this.$component.classList.remove('is-open');
+    }
+  }, {
+    key: '_keyPressed',
+    value: function _keyPressed(event) {
+      if (event.keyCode == 27) {
+        this._close();
+      }
+    }
+  }, {
+    key: '_toggleOpen',
+    value: function _toggleOpen() {
+      if (this.$component.classList.contains('is-open')) {
+        this.$component.classList.remove('is-open');
+      } else {
+        this.$component.classList.add('is-open');
+        this.$input.focus();
+      }
+    }
+  }, {
+    key: '_triggerClicked',
+    value: function _triggerClicked(event) {
+      event.preventDefault();
+
+      this._toggleOpen();
+    }
+  }, {
+    key: 'init',
+    value: function init() {
+      var _this = this;
+
+      this.$close.addEventListener('click', function (event) {
+        return _this._close(event);
+      });
+      this.$trigger.addEventListener('click', function (event) {
+        return _this._triggerClicked(event);
+      });
+      document.addEventListener('keyup', function (event) {
+        return _this._keyPressed(event);
+      });
+    }
+  }]);
+
+  return UnifiedNavSearch;
+}();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var UnifiedNav = function () {
+  function UnifiedNav(_ref) {
+    var fixedClass = _ref.fixedClass,
+        header = _ref.header,
+        siteContent = _ref.siteContent,
+        triggerOffset = _ref.triggerOffset;
+
+    _classCallCheck(this, UnifiedNav);
+
+    this.fixedClass = fixedClass;
+    this.header = header;
+    this.siteContent = siteContent;
+    this.triggerOffset = triggerOffset;
+  }
+
+  _createClass(UnifiedNav, [{
+    key: 'bindWindowScrollListener',
+    value: function bindWindowScrollListener() {
+      var _this = this;
+
+      window.addEventListener('scroll', function () {
+        return _this.handleWindowScrolled();
+      });
+    }
+  }, {
+    key: 'fixHeader',
+    value: function fixHeader() {
+      this.header.classList.add(this.fixedClass);
+    }
+  }, {
+    key: 'handleWindowScrolled',
+    value: function handleWindowScrolled() {
+      if (this.scrolledPastTrigger()) {
+        this.fixHeader();
+      } else {
+        this.unfixHeader();
+      }
+    }
+  }, {
+    key: 'scrolledPastTrigger',
+    value: function scrolledPastTrigger() {
+      var scrollDistance = window.scrollY;
+      var isOutOfView = scrollDistance > this.triggerOffset;
+
+      return isOutOfView;
+    }
+  }, {
+    key: 'init',
+    value: function init() {
+      this.bindWindowScrollListener();
+      this.handleWindowScrolled();
+    }
+  }, {
+    key: 'unfixHeader',
+    value: function unfixHeader() {
+      this.header.classList.remove(this.fixedClass);
+    }
+  }]);
+
+  return UnifiedNav;
+}();

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="273px" height="150px" viewBox="0 0 273 150" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 41.2 (35397) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 7</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect id="path-1" x="30" y="0" width="222" height="140"></rect>
+        <mask id="mask-2" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="222" height="140" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <rect id="path-3" x="0" y="0" width="57" height="100" rx="3"></rect>
+        <mask id="mask-4" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="57" height="100" fill="white">
+            <use xlink:href="#path-3"></use>
+        </mask>
+        <rect id="path-5" x="63" y="0" width="119" height="66" rx="3"></rect>
+        <mask id="mask-6" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="119" height="66" fill="white">
+            <use xlink:href="#path-5"></use>
+        </mask>
+        <rect id="path-7" x="63" y="72" width="119" height="19" rx="3"></rect>
+        <mask id="mask-8" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="119" height="19" fill="white">
+            <use xlink:href="#path-7"></use>
+        </mask>
+    </defs>
+    <g id="Caylee-Nov-16" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="My-Profile-Copy" transform="translate(-522.000000, -253.000000)">
+            <g id="Group" transform="translate(409.000000, 173.000000)">
+                <g id="Group-7" transform="translate(110.000000, 80.000000)">
+                    <use id="Rectangle-12-Copy" stroke="#DFEEFF" mask="url(#mask-2)" stroke-width="4" fill="#F3F9FF" xlink:href="#path-1"></use>
+                    <g id="Group-6" transform="translate(50.000000, 20.000000)" stroke="#DFEEFF" stroke-width="4" fill="#FFFFFF">
+                        <use id="Rectangle-10" mask="url(#mask-4)" xlink:href="#path-3"></use>
+                        <use id="Rectangle-12-Copy" mask="url(#mask-6)" xlink:href="#path-5"></use>
+                        <use id="Rectangle-12-Copy-3" mask="url(#mask-8)" xlink:href="#path-7"></use>
+                    </g>
+                    <polygon id="Path-4" stroke="#FFD013" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#FFEDA4" points="39.9631568 20 34.701579 35.7559176 19 40.9123173 34.8678879 46.2858655 40.0397248 62 45.3167397 46.2286454 61.0372548 40.9958834 45.2693993 35.7933782"></polygon>
+                    <polygon id="Path-4-Copy" stroke="#FFD013" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#FFEDA4" points="196.459094 118 192.57899 129.619061 181 133.421603 192.701633 137.384278 196.515558 148.972527 200.407046 137.342081 212 133.483228 200.372135 129.646686"></polygon>
+                    <polygon id="Path-4-Copy" stroke="#FFD013" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#FFEDA4" transform="translate(269.667901, 29.667901) rotate(-45.000000) translate(-269.667901, -29.667901) " points="269.649851 22.8346932 267.937782 27.9615245 262.828632 29.6393698 267.991897 31.3878732 269.674766 36.5011087 271.391858 31.3692543 276.50717 29.6665615 271.376454 27.9737139"></polygon>
+                    <polygon id="Path-4-Copy-2" stroke="#FFD013" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#FFEDA4" transform="translate(9.667901, 69.667901) rotate(-45.000000) translate(-9.667901, -69.667901) " points="9.64985132 62.8346932 7.93778208 67.9615245 2.82863203 69.6393698 7.99189748 71.3878732 9.67476584 76.5011087 11.3918582 71.3692543 16.5071699 69.6665615 11.376454 67.9737139"></polygon>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

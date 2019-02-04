@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<!-- saved from url=(0103)https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04 -->
+<html lang="en" class="wf-proximanova-n6-active wf-proximanova-n4-active wf-proximanova-i4-active wf-proximanova-n3-active wf-active"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>How To Secure Nginx with Let's Encrypt on Ubuntu 18.04 | DigitalOcean</title>
+
+<meta name="description" content="In this tutorial, we will show you how to use Let&#39;s Encrypt to obtain a free SSL certificate and use it with Nginx on Ubuntu 18.04. We will also show you how to automatically renew your SSL certificate. If you&#39;re running a different web server, simply">
+<meta name="keywords" content="Let&#39;s Encrypt Nginx">
+
+<meta name="og:title" content="How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04 | DigitalOcean">
+<meta name="og:description" content="In this tutorial, we will show you how to use Let&#39;s Encrypt to obtain a free SSL certificate and use it with Nginx on Ubuntu 18.04. We will also show you how to automatically renew your SSL certificate. If you&#39;re running a different web server, simply">
+<meta name="og:site_name" content="DigitalOcean">
+<meta name="og:type" content="article">
+<meta name="og:image" content="https://community-cdn-digitalocean-com.global.ssl.fastly.net/assets/tutorials/images/large/Let&#39;s_Encrypt_nginx_tw_mostov.jpg?1529943642">
+
+<meta name="twitter:site" content="DigitalOcean">
+<meta name="twitter:title" content="How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04 | DigitalOcean">
+<meta name="twitter:description" content="In this tutorial, we will show you how to use Let&#39;s Encrypt to obtain a free SSL certificate and use it with Nginx on Ubuntu 18.04. We will also show you how to automatically renew your SSL certificate. If you&#39;re running a different web server, simply">
+<meta name="twitter:creator" content="DigitalOcean">
+<meta name="twitter:card" content="photo">
+<meta name="twitter:url" content="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04">
+<meta name="twitter:image" content="https://community-cdn-digitalocean-com.global.ssl.fastly.net/assets/tutorials/images/large/Let&#39;s_Encrypt_nginx_tw_mostov.jpg?1529943642">
+
+  <link rel="canonical" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04">
+
+        <link rel="alternate" hreflang="en" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04">
+      <link rel="alternate" hreflang="es" href="https://www.digitalocean.com/community/tutorials/como-asegurar-nginx-con-let-s-encrypt-en-ubuntu-18-04-es">
+      <link rel="alternate" hreflang="pt" href="https://www.digitalocean.com/community/tutorials/como-proteger-o-nginx-com-o-let-s-encrypt-no-ubuntu-18-04-pt">
+      <link rel="alternate" hreflang="ru" href="https://www.digitalocean.com/community/tutorials/nginx-let-s-encrypt-ubuntu-18-04-ru">
+
+
+    <link rel="stylesheet" media="all" href="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/application-b382140d72736182fb5af28c690553a9.css">
+
+    
+    <meta name="csrf-param" content="authenticity_token">
+<meta name="csrf-token" content="Ck10UKm9jmsrDGufpq63TEBt2MOv0bpe4hObwgf7+NzLDgWK+ixDNT1mA8f3aDQWQTSw1jb4VwBC8l+UbUsvOA==">
+    <script type="text/javascript" async="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/linkid.js.download"></script><script type="text/javascript" async="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/analytics.js.download"></script><script type="text/javascript" async="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/f.txt"></script><script src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/all.js.download" async=""></script><script type="text/javascript" async="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/roundtrip.js.download"></script><script async="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/gtm.js.download"></script><script type="text/javascript" async="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/analytics.min.js.download"></script><script src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/prerequisites-9a51dfaadf0d3629cc636286133a958d.js.download"></script>
+    <script>
+//<![CDATA[
+
+  window.cookieDomain = '.digitalocean.com';
+
+//]]>
+</script><script src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/cookieConsent.js.download"></script>
+<link rel="stylesheet" href="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/cookieConsent.css">
+
+    <script src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/bugsnag.min.js.download"></script>
+
+<script>
+  window.Bugsnag = bugsnag({
+    apiKey: '9ffc01bc3e1fa7891bfd20909d1bfb0e',
+    logger: null
+  })
+</script>
+
+<script type="text/javascript">
+  if(window.analytics=window.analytics||[],window.analytics.included)window.console&&console.error&&console.error("analytics.js included twice");else{window.analytics.included=!0,window.analytics.methods=["identify","group","track","page","pageview","alias","ready","on","once","off","trackLink","trackForm","trackClick","trackSubmit"],window.analytics.factory=function(a){return function(){var n=Array.prototype.slice.call(arguments);return n.unshift(a),window.analytics.push(n),window.analytics}};for(var i=0;i<window.analytics.methods.length;i++){var key=window.analytics.methods[i];window.analytics[key]=window.analytics.factory(key)}window.analytics.load=function(a){var n=document.createElement("script");n.type="text/javascript",n.async=!0,n.src=("https:"===document.location.protocol?"https://":"http://")+"cdn.segment.com/analytics.js/v1/"+a+"/analytics.min.js";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(n,t)},window.analytics.SNIPPET_VERSION="2.0.9",
+    window.analytics.load("puo3uv968t")}
+  window.analytics.page();
+</script>
+
+
+<!-- Google Tag Manager -->
+<script>
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-KHWBBT');
+</script>
+<!-- End Google Tag Manager -->
+
+<script src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/internalCookies-4d28f1e23781229186db62120889af1f.js.download"></script>
+
+      <script src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/izu1uqu.js.download"></script>
+      <style type="text/css">.tk-proxima-nova{font-family:"proxima-nova",sans-serif;}</style><style type="text/css">@font-face{font-family:tk-proxima-nova-n6;src:url(https://use.typekit.net/af/27776b/00000000000000003b9b0939/27/l?subset_id=2&fvd=n6&v=3) format("woff2"),url(https://use.typekit.net/af/27776b/00000000000000003b9b0939/27/d?subset_id=2&fvd=n6&v=3) format("woff"),url(https://use.typekit.net/af/27776b/00000000000000003b9b0939/27/a?subset_id=2&fvd=n6&v=3) format("opentype");font-weight:600;font-style:normal;}@font-face{font-family:tk-proxima-nova-n4;src:url(https://use.typekit.net/af/4838bd/00000000000000003b9b0934/27/l?subset_id=2&fvd=n4&v=3) format("woff2"),url(https://use.typekit.net/af/4838bd/00000000000000003b9b0934/27/d?subset_id=2&fvd=n4&v=3) format("woff"),url(https://use.typekit.net/af/4838bd/00000000000000003b9b0934/27/a?subset_id=2&fvd=n4&v=3) format("opentype");font-weight:400;font-style:normal;}@font-face{font-family:tk-proxima-nova-i4;src:url(https://use.typekit.net/af/6aec08/00000000000000003b9b0935/27/l?subset_id=2&fvd=i4&v=3) format("woff2"),url(https://use.typekit.net/af/6aec08/00000000000000003b9b0935/27/d?subset_id=2&fvd=i4&v=3) format("woff"),url(https://use.typekit.net/af/6aec08/00000000000000003b9b0935/27/a?subset_id=2&fvd=i4&v=3) format("opentype");font-weight:400;font-style:italic;}@font-face{font-family:tk-proxima-nova-n3;src:url(https://use.typekit.net/af/437c3d/00000000000000003b9b0932/27/l?subset_id=2&fvd=n3&v=3) format("woff2"),url(https://use.typekit.net/af/437c3d/00000000000000003b9b0932/27/d?subset_id=2&fvd=n3&v=3) format("woff"),url(https://use.typekit.net/af/437c3d/00000000000000003b9b0932/27/a?subset_id=2&fvd=n3&v=3) format("opentype");font-weight:300;font-style:normal;}</style><script>try{Typekit.load({ async: true });}catch(e){}</script>
+      <script src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/polyfill.min.js.download"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="https://www.digitalocean.com/community/tutorials/feed">
+    <script>
+      window.comApp = {
+        prefix: '/community',
+        svgIconPath: 'https://www.digitalocean.com/assets/community/icon-sprite-d76eb75d70ccf8ffb4c0b47b7dbc88ca.svg',
+        railsEnv: 'production',
+        rootUrl: 'https://www.digitalocean.com/community'
+      };
+    </script>
+    
+    <script src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/application-37e104c14067214e9efd77d5e6e911f3.js.download"></script>
+      <script>window.currentUser.initData({"data":{"id":"508013","type":"users","attributes":{"username":"sarpixo","first-name":null,"last-name":null,"viewed-username-prompt":true,"website":null,"bio":null,"twitter-handle":null,"github-handle":null,"linkedin-url":null,"slug":"sarpixo","skills":null,"learn-more":null,"created-at":"2019-02-02T15:07:51.536Z","avatar-images":{},"gravatar-image":"https://secure.gravatar.com/avatar/080ece3e9b73bed4173668664c51de4f.png?filetype=png\u0026rating=g\u0026secure=true\u0026size=70","location":null,"is-admin":false,"referral-code":null,"preferences":{"upvotes-modal":true,"new-upvotes-accept-modal":false,"new-profile-modal":true},"email":"sarpixo@gmail.com","updated-at":"2019-02-02T15:08:34.844Z"},"relationships":{"posts":{"links":{"related":{"href":"/community/api/users/sarpixo/posts"}}},"statistics":{"links":{"related":{"href":"/community/api/users/sarpixo/statistics"}}}}}});</script>
+  <style>.fluidvids {width: 100%; max-width: 100%; position: relative;}.fluidvids-item {position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;}</style><script id="twitter-wjs" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/widgets.js.download"></script><style type="text/css">@font-face{font-family:proxima-nova;src:url(https://use.typekit.net/af/27776b/00000000000000003b9b0939/27/l?subset_id=2&fvd=n6&v=3) format("woff2"),url(https://use.typekit.net/af/27776b/00000000000000003b9b0939/27/d?subset_id=2&fvd=n6&v=3) format("woff"),url(https://use.typekit.net/af/27776b/00000000000000003b9b0939/27/a?subset_id=2&fvd=n6&v=3) format("opentype");font-weight:600;font-style:normal;}@font-face{font-family:proxima-nova;src:url(https://use.typekit.net/af/4838bd/00000000000000003b9b0934/27/l?subset_id=2&fvd=n4&v=3) format("woff2"),url(https://use.typekit.net/af/4838bd/00000000000000003b9b0934/27/d?subset_id=2&fvd=n4&v=3) format("woff"),url(https://use.typekit.net/af/4838bd/00000000000000003b9b0934/27/a?subset_id=2&fvd=n4&v=3) format("opentype");font-weight:400;font-style:normal;}@font-face{font-family:proxima-nova;src:url(https://use.typekit.net/af/6aec08/00000000000000003b9b0935/27/l?subset_id=2&fvd=i4&v=3) format("woff2"),url(https://use.typekit.net/af/6aec08/00000000000000003b9b0935/27/d?subset_id=2&fvd=i4&v=3) format("woff"),url(https://use.typekit.net/af/6aec08/00000000000000003b9b0935/27/a?subset_id=2&fvd=i4&v=3) format("opentype");font-weight:400;font-style:italic;}@font-face{font-family:proxima-nova;src:url(https://use.typekit.net/af/437c3d/00000000000000003b9b0932/27/l?subset_id=2&fvd=n3&v=3) format("woff2"),url(https://use.typekit.net/af/437c3d/00000000000000003b9b0932/27/d?subset_id=2&fvd=n3&v=3) format("woff"),url(https://use.typekit.net/af/437c3d/00000000000000003b9b0932/27/a?subset_id=2&fvd=n3&v=3) format("opentype");font-weight:300;font-style:normal;}</style><script id="facebook-jssdk" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/all.js(1).download"></script><script src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/f(1).txt"></script><style type="text/css">.fb_hidden{position:absolute;top:-10000px;z-index:10001}.fb_reposition{overflow:hidden;position:relative}.fb_invisible{display:none}.fb_reset{background:none;border:0;border-spacing:0;color:#000;cursor:auto;direction:ltr;font-family:"lucida grande", tahoma, verdana, arial, sans-serif;font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;letter-spacing:normal;line-height:1;margin:0;overflow:visible;padding:0;text-align:left;text-decoration:none;text-indent:0;text-shadow:none;text-transform:none;visibility:visible;white-space:normal;word-spacing:normal}.fb_reset>div{overflow:hidden}@keyframes fb_transform{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}.fb_animate{animation:fb_transform .3s forwards}
+.fb_dialog{background:rgba(82, 82, 82, .7);position:absolute;top:-10000px;z-index:10001}.fb_dialog_advanced{border-radius:8px;padding:10px}.fb_dialog_content{background:#fff;color:#373737}.fb_dialog_close_icon{background:url(https://static.xx.fbcdn.net/rsrc.php/v3/yq/r/IE9JII6Z1Ys.png) no-repeat scroll 0 0 transparent;cursor:pointer;display:block;height:15px;position:absolute;right:18px;top:17px;width:15px}.fb_dialog_mobile .fb_dialog_close_icon{left:5px;right:auto;top:5px}.fb_dialog_padding{background-color:transparent;position:absolute;width:1px;z-index:-1}.fb_dialog_close_icon:hover{background:url(https://static.xx.fbcdn.net/rsrc.php/v3/yq/r/IE9JII6Z1Ys.png) no-repeat scroll 0 -15px transparent}.fb_dialog_close_icon:active{background:url(https://static.xx.fbcdn.net/rsrc.php/v3/yq/r/IE9JII6Z1Ys.png) no-repeat scroll 0 -30px transparent}.fb_dialog_iframe{line-height:0}.fb_dialog_content .dialog_title{background:#6d84b4;border:1px solid #365899;color:#fff;font-size:14px;font-weight:bold;margin:0}.fb_dialog_content .dialog_title>span{background:url(https://static.xx.fbcdn.net/rsrc.php/v3/yd/r/Cou7n-nqK52.gif) no-repeat 5px 50%;float:left;padding:5px 0 7px 26px}body.fb_hidden{height:100%;left:0;margin:0;overflow:visible;position:absolute;top:-10000px;transform:none;width:100%}.fb_dialog.fb_dialog_mobile.loading{background:url(https://static.xx.fbcdn.net/rsrc.php/v3/ya/r/3rhSv5V8j3o.gif) white no-repeat 50% 50%;min-height:100%;min-width:100%;overflow:hidden;position:absolute;top:0;z-index:10001}.fb_dialog.fb_dialog_mobile.loading.centered{background:none;height:auto;min-height:initial;min-width:initial;width:auto}.fb_dialog.fb_dialog_mobile.loading.centered #fb_dialog_loader_spinner{width:100%}.fb_dialog.fb_dialog_mobile.loading.centered .fb_dialog_content{background:none}.loading.centered #fb_dialog_loader_close{clear:both;color:#fff;display:block;font-size:18px;padding-top:20px}#fb-root #fb_dialog_ipad_overlay{background:rgba(0, 0, 0, .4);bottom:0;left:0;min-height:100%;position:absolute;right:0;top:0;width:100%;z-index:10000}#fb-root #fb_dialog_ipad_overlay.hidden{display:none}.fb_dialog.fb_dialog_mobile.loading iframe{visibility:hidden}.fb_dialog_mobile .fb_dialog_iframe{position:sticky;top:0}.fb_dialog_content .dialog_header{background:linear-gradient(from(#738aba), to(#2c4987));border-bottom:1px solid;border-color:#1d3c78;box-shadow:white 0 1px 1px -1px inset;color:#fff;font:bold 14px Helvetica, sans-serif;text-overflow:ellipsis;text-shadow:rgba(0, 30, 84, .296875) 0 -1px 0;vertical-align:middle;white-space:nowrap}.fb_dialog_content .dialog_header table{height:43px;width:100%}.fb_dialog_content .dialog_header td.header_left{font-size:12px;padding-left:5px;vertical-align:middle;width:60px}.fb_dialog_content .dialog_header td.header_right{font-size:12px;padding-right:5px;vertical-align:middle;width:60px}.fb_dialog_content .touchable_button{background:linear-gradient(from(#4267B2), to(#2a4887));background-clip:padding-box;border:1px solid #29487d;border-radius:3px;display:inline-block;line-height:18px;margin-top:3px;max-width:85px;padding:4px 12px;position:relative}.fb_dialog_content .dialog_header .touchable_button input{background:none;border:none;color:#fff;font:bold 12px Helvetica, sans-serif;margin:2px -12px;padding:2px 6px 3px 6px;text-shadow:rgba(0, 30, 84, .296875) 0 -1px 0}.fb_dialog_content .dialog_header .header_center{color:#fff;font-size:16px;font-weight:bold;line-height:18px;text-align:center;vertical-align:middle}.fb_dialog_content .dialog_content{background:url(https://static.xx.fbcdn.net/rsrc.php/v3/y9/r/jKEcVPZFk-2.gif) no-repeat 50% 50%;border:1px solid #4a4a4a;border-bottom:0;border-top:0;height:150px}.fb_dialog_content .dialog_footer{background:#f5f6f7;border:1px solid #4a4a4a;border-top-color:#ccc;height:40px}#fb_dialog_loader_close{float:left}.fb_dialog.fb_dialog_mobile .fb_dialog_close_button{text-shadow:rgba(0, 30, 84, .296875) 0 -1px 0}.fb_dialog.fb_dialog_mobile .fb_dialog_close_icon{visibility:hidden}#fb_dialog_loader_spinner{animation:rotateSpinner 1.2s linear infinite;background-color:transparent;background-image:url(https://static.xx.fbcdn.net/rsrc.php/v3/yD/r/t-wz8gw1xG1.png);background-position:50% 50%;background-repeat:no-repeat;height:24px;width:24px}@keyframes rotateSpinner{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.fb_iframe_widget{display:inline-block;position:relative}.fb_iframe_widget span{display:inline-block;position:relative;text-align:justify}.fb_iframe_widget iframe{position:absolute}.fb_iframe_widget_fluid_desktop,.fb_iframe_widget_fluid_desktop span,.fb_iframe_widget_fluid_desktop iframe{max-width:100%}.fb_iframe_widget_fluid_desktop iframe{min-width:220px;position:relative}.fb_iframe_widget_lift{z-index:1}.fb_iframe_widget_fluid{display:inline}.fb_iframe_widget_fluid span{width:100%}</style></head>
+  <body class="signed-in feature-filter-bar feature-upvotes tutorials-controller tutorial-single" data-env="production" data-prefix="/community" data-user-id="sarpixo" data-facebook-app-id="694818843983011" data-completed-tutorial-id="" data-tutorial-id="2612" data-js="tutorial">
+    
+
+    <div class="outside_viewport">
+        <div id="contents-modal" class="modal fade mini-modal" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1>Contents</h1>
+          <button class="close-button icon icon-close-light" data-dismiss="modal" aria-label="close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="table-of-contents-modal tocify"><ul id="tocify-header0" class="tocify-header"><li class="tocify-item tocify-focus" data-unique="prerequisites"><a>Prerequisites</a></li></ul><ul id="tocify-header1" class="tocify-header"><li class="tocify-item" data-unique="step-1-—-installing-certbot"><a>Step 1 — Installing Certbot</a></li></ul><ul id="tocify-header2" class="tocify-header"><li class="tocify-item" data-unique="step-2-—-confirming-nginx&#39;s-configuration"><a>Step 2 — Confirming Nginx's Configuration</a></li></ul><ul id="tocify-header3" class="tocify-header"><li class="tocify-item" data-unique="step-3-—-allowing-https-through-the-firewall"><a>Step 3 — Allowing HTTPS Through the Firewall</a></li></ul><ul id="tocify-header4" class="tocify-header"><li class="tocify-item" data-unique="step-4-—-obtaining-an-ssl-certificate"><a>Step 4 — Obtaining an SSL Certificate</a></li></ul><ul id="tocify-header5" class="tocify-header"><li class="tocify-item" data-unique="step-5-—-verifying-certbot-auto-renewal"><a>Step 5 — Verifying Certbot Auto-Renewal</a></li></ul><ul id="tocify-header6" class="tocify-header"><li class="tocify-item" data-unique="conclusion"><a>Conclusion</a></li></ul></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="translation-modal" class="modal fade mini-modal" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1>Language</h1>
+          <a class="close-button" data-dismiss="modal" aria-label="close" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04"><span class="icon icon-close-light"></span></a>
+        </div>
+        <div class="modal-body">
+
+          <div class="content-translations">
+            <div class="current-language">
+              <ul class="languages large">
+                <li class="current">
+                  <span class="language "></span>
+                  <span class="icon icon-check-light"></span>
+                  English
+                </li>
+
+
+                    <li>
+                      <a class="edit" title="Spanish" href="https://www.digitalocean.com/community/tutorials/como-asegurar-nginx-con-let-s-encrypt-en-ubuntu-18-04-es">
+                        <span class="language es"></span>
+                        Spanish
+</a>                    </li>
+                    <li>
+                      <a class="edit" title="Portuguese" href="https://www.digitalocean.com/community/tutorials/como-proteger-o-nginx-com-o-let-s-encrypt-no-ubuntu-18-04-pt">
+                        <span class="language pt"></span>
+                        Portuguese
+</a>                    </li>
+                    <li>
+                      <a class="edit" title="Russian" href="https://www.digitalocean.com/community/tutorials/nginx-let-s-encrypt-ubuntu-18-04-ru">
+                        <span class="language ru"></span>
+                        Russian
+</a>                    </li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="share-modal" class="modal fade mini-modal" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1>Share</h1>
+        <button type="button" class="close-button icon icon-close-light" aria-label="close" data-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="social-sharing social-sharing-container">
+          <ul class="top ">
+            <li class="shareBtn" id="sbTwitter">
+              <a href="http://twitter.com/share?text=How%20To%20Secure%20Nginx%20with%20Let%27s%20Encrypt%20on%20Ubuntu%2018.04&amp;url=https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04?utm_content=how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04&amp;utm_medium=community&amp;utm_source=twshare" class="share-icon share-popup" title="Share on Twitter">
+                <span class="sIcon icon-bird"></span>
+              </a>
+              <a href="http://twitter.com/share?text=How%20To%20Secure%20Nginx%20with%20Let%27s%20Encrypt%20on%20Ubuntu%2018.04&amp;url=https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04?utm_content=how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04&amp;utm_medium=community&amp;utm_source=twshare" class="share-link share-popup" title="Share on Twitter">
+                Twitter
+              </a>
+            </li>
+            <li class="shareBtn" id="sbFacebook">
+              <a class="share-icon facebook-share" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04?utm_content=how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04&amp;utm_medium=community&amp;utm_source=fbshare" onclick="" title="Share on Facebook">
+                <span class="sIcon icon-facebook-B"></span>
+              </a>
+
+              <a class="share-link facebook-share" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04?utm_content=how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04&amp;utm_medium=community&amp;utm_source=fbshare" onclick="" title="Share on Facebook">
+                Facebook
+              </a>
+            </li>
+            <li class="shareBtn" id="sbGoogle">
+              <a href="https://plus.google.com/share?url=https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04?utm_content=how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04&amp;utm_medium=community&amp;utm_source=gpshare" class="share-icon share-popup" title="Share on Google+">
+                <span class="sIcon icon-google-plus-B"></span>
+              </a>
+              <a href="https://plus.google.com/share?url=https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04?utm_content=how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04&amp;utm_medium=community&amp;utm_source=gpshare" class="share-link share-popup" title="Share on Google+">
+                Google+
+              </a>
+            </li>
+            <li class="shareBtn" id="sbYC">
+              <a href="https://news.ycombinator.com/submitlink?t=How%20To%20Secure%20Nginx%20with%20Let%27s%20Encrypt%20on%20Ubuntu%2018.04&amp;u=https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04?utm_content=how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04&amp;utm_medium=community&amp;utm_source=hnshare" class="share-icon share-popup" target="_blank" title="Submit to Hacker News">
+                <span class="sIcon icon-hacker-news"></span>
+              </a>
+              <a href="https://news.ycombinator.com/submitlink?t=How%20To%20Secure%20Nginx%20with%20Let%27s%20Encrypt%20on%20Ubuntu%2018.04&amp;u=https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04?utm_content=how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04&amp;utm_medium=community&amp;utm_source=hnshare" class="share-link share-popup" target="_blank" title="Submit to Hacker News">
+                Hacker News
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <div class="table-of-contents has-init" style="top: 196px;">
+    <div data-js="tableOfContentsDesktop" class="tocify"><ul id="tocify-header0" class="tocify-header"><li class="tocify-item tocify-focus" data-unique="prerequisites"><a>Prerequisites</a></li></ul><ul id="tocify-header1" class="tocify-header"><li class="tocify-item" data-unique="step-1-—-installing-certbot"><a>Step 1 — Installing Certbot</a></li></ul><ul id="tocify-header2" class="tocify-header"><li class="tocify-item" data-unique="step-2-—-confirming-nginx&#39;s-configuration"><a>Step 2 — Confirming Nginx's Configuration</a></li></ul><ul id="tocify-header3" class="tocify-header"><li class="tocify-item" data-unique="step-3-—-allowing-https-through-the-firewall"><a>Step 3 — Allowing HTTPS Through the Firewall</a></li></ul><ul id="tocify-header4" class="tocify-header"><li class="tocify-item" data-unique="step-4-—-obtaining-an-ssl-certificate"><a>Step 4 — Obtaining an SSL Certificate</a></li></ul><ul id="tocify-header5" class="tocify-header"><li class="tocify-item" data-unique="step-5-—-verifying-certbot-auto-renewal"><a>Step 5 — Verifying Certbot Auto-Renewal</a></li></ul><ul id="tocify-header6" class="tocify-header"><li class="tocify-item" data-unique="conclusion"><a>Conclusion</a></li></ul></div>
+    <button type="button" class="Button--reset Tutorial-button " data-js="markAsComplete" data-tutorialinteraction="" data-tutorialsingle=""><svg class="svg-icon svg-icon-completed"><use xlink:href="https://www.digitalocean.com/assets/community/icon-sprite-d76eb75d70ccf8ffb4c0b47b7dbc88ca.svg#icon-completed"></use></svg><span>Mark as Complete</span></button>
+  </div>
+  <div id="flag-modal" class="modal fade flag-modal mini-modal" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1>Report Comment</h1>
+        <a class="close-button" data-dismiss="modal" aria-label="close" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04"><span class="icon icon-close-light"></span></a>
+      </div>
+      <div class="modal-body">
+        <form class="new_spam_flag" id="new_spam_flag" action="https://www.digitalocean.com/community" accept-charset="UTF-8" data-remote="true" method="post"><input name="utf8" type="hidden" value="✓"><input type="hidden" name="_method" value="put">
+          <ul>
+              <li class="flag-reason">
+                <input type="radio" value="Spam" name="spam_flag[reason]" id="spam_flag_reason_spam">
+                <label for="spam_flag_reason_spam">Spam</label>
+                
+              </li>
+              <li class="flag-reason">
+                <input type="radio" value="Offensive" name="spam_flag[reason]" id="spam_flag_reason_offensive">
+                <label for="spam_flag_reason_offensive">Offensive</label>
+                
+              </li>
+              <li class="flag-reason">
+                <input type="radio" value="Off-Topic" name="spam_flag[reason]" id="spam_flag_reason_off-topic">
+                <label for="spam_flag_reason_off-topic">Off-Topic</label>
+                
+              </li>
+              <li class="flag-reason">
+                <input type="radio" value="Other" name="spam_flag[reason]" id="spam_flag_reason_other">
+                <label for="spam_flag_reason_other">Other</label>
+                <input placeholder="Reason for flagging..." class="flag-description" type="text" name="spam_flag[description]" id="spam_flag_description">
+              </li>
+          </ul>
+          <input type="submit" name="commit" value="Submit" class="button blue-button full-width-button" id="submit-flag">
+</form>      </div>
+    </div>
+  </div>
+</div>
+
+  <div id="share-modal" class="modal fade mini-modal" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1>Share</h1>
+        <button type="button" class="close-button icon icon-close-light" aria-label="close" data-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="social-sharing social-sharing-container">
+          <ul class="bottom ">
+            <li class="shareBtn" id="sbTwitter">
+              <a href="http://twitter.com/share?text=How%20To%20Secure%20Nginx%20with%20Let%27s%20Encrypt%20on%20Ubuntu%2018.04&amp;url=https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04?utm_content=how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04&amp;utm_medium=community&amp;utm_source=twshare" class="share-icon share-popup" title="Share on Twitter">
+                <span class="sIcon icon-bird"></span>
+              </a>
+              <a href="http://twitter.com/share?text=How%20To%20Secure%20Nginx%20with%20Let%27s%20Encrypt%20on%20Ubuntu%2018.04&amp;url=https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04?utm_content=how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04&amp;utm_medium=community&amp;utm_source=twshare" class="share-link share-popup" title="Share on Twitter">
+                Twitter
+              </a>
+            </li>
+            <li class="shareBtn" id="sbFacebook">
+              <a class="share-icon facebook-share" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04?utm_content=how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04&amp;utm_medium=community&amp;utm_source=fbshare" onclick="" title="Share on Facebook">
+                <span class="sIcon icon-facebook-B"></span>
+              </a>
+
+              <a class="share-link facebook-share" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04?utm_content=how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04&amp;utm_medium=community&amp;utm_source=fbshare" onclick="" title="Share on Facebook">
+                Facebook
+              </a>
+            </li>
+            <li class="shareBtn" id="sbGoogle">
+              <a href="https://plus.google.com/share?url=https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04?utm_content=how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04&amp;utm_medium=community&amp;utm_source=gpshare" class="share-icon share-popup" title="Share on Google+">
+                <span class="sIcon icon-google-plus-B"></span>
+              </a>
+              <a href="https://plus.google.com/share?url=https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04?utm_content=how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04&amp;utm_medium=community&amp;utm_source=gpshare" class="share-link share-popup" title="Share on Google+">
+                Google+
+              </a>
+            </li>
+            <li class="shareBtn" id="sbYC">
+              <a href="https://news.ycombinator.com/submitlink?t=How%20To%20Secure%20Nginx%20with%20Let%27s%20Encrypt%20on%20Ubuntu%2018.04&amp;u=https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04?utm_content=how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04&amp;utm_medium=community&amp;utm_source=hnshare" class="share-icon share-popup" target="_blank" title="Submit to Hacker News">
+                <span class="sIcon icon-hacker-news"></span>
+              </a>
+              <a href="https://news.ycombinator.com/submitlink?t=How%20To%20Secure%20Nginx%20with%20Let%27s%20Encrypt%20on%20Ubuntu%2018.04&amp;u=https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04?utm_content=how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04&amp;utm_medium=community&amp;utm_source=hnshare" class="share-link share-popup" target="_blank" title="Submit to Hacker News">
+                Hacker News
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+      
+    </div>
+
+      
+      
+<header class="unified-nav-shims__header">
+  <div class="UnifiedMobileNav " role="banner">
+  <a class="UnifiedMobileNav-spaceRight" href="https://www.digitalocean.com/">
+    <svg xmlns="http://www.w3.org/2000/svg" width="172" height="29" role="img" aria-labelledby="jq0qzx0bnell011tjymo5upuqc8fhxs"><title id="jq0qzx0bnell011tjymo5upuqc8fhxs">DigitalOcean home</title><g class="UnifiedNav-logoSVG" fill-rule="evenodd"><path d="M14.4942 29v-5.5674c5.9572 0 10.5633-5.8478 8.2892-12.059-.8425-2.3006-2.693-4.1355-5.0126-4.9706-6.262-2.2534-12.1564 2.3135-12.1573 8.2207 0 0-.0006.0014-.0014.0014H0C0 5.2123 9.1687-2.1167 19.1138.9624c4.3459 1.3457 7.7993 4.7708 9.1561 9.081C31.3742 19.9068 23.985 29 14.4942 29"></path><path d="M14.507 23.4468H8.9103v-5.549s.0005-.0011.0011-.0011h5.5949c.0006 0 .0009.0006.0009.0006v5.5495M8.9093 27.7118H4.6105l-.0012-.0012v-4.2638h4.3009v4.2638l-.0009.0012M4.6125 23.4468H1.0088c-.0015 0-.0026-.0012-.0026-.0012v-3.5724s.0011-.0025.0026-.0025h3.601c.0015 0 .0027.0011.0027.0011v3.575M43.2806 9.6357h1.649c1.8346 0 3.345.358 4.49 1.0647 1.2714.7603 1.9164 2.2069 1.9164 4.2991 0 2.1554-.6465 3.6671-1.9207 4.4942h-.0008c-1.0971.7196-2.5981 1.0846-4.462 1.0846h-1.6719V9.6357zm8.324-1.0736c-1.6598-1.142-3.7252-1.721-6.1387-1.721h-5.2537V23.373h5.2537c2.4074 0 4.4737-.6113 6.1407-1.8157.907-.6382 1.6197-1.5304 2.1185-2.651.4962-1.1144.7479-2.4288.7479-3.9067 0-1.4605-.2517-2.758-.7482-3.857-.4988-1.104-1.212-1.972-2.1202-2.5804zM58.1303 6.6376c-.5051 0-.9403.1777-1.2906.5254-.3546.335-.5346.7597-.5346 1.2618 0 .501.1791.9322.532 1.2825.3529.35.788.528 1.2932.528.5042 0 .9394-.178 1.2928-.528.3535-.3508.5324-.7821.5324-1.2825 0-.5015-.18-.926-.5324-1.2592-.3534-.3503-.7886-.528-1.2928-.528M56.6247 23.3729h2.9538V11.7294h-2.9538zM69.5321 19.5787c-.5162.5814-1.1793.8635-2.0264.8635-.8471 0-1.5064-.282-2.015-.863-.5065-.5777-.7637-1.3439-.7637-2.2773 0-.9479.2572-1.7238.764-2.3058.502-.576 1.1796-.8683 2.0147-.8683.8465 0 1.5096.284 2.0262.8695.5142.582.7751 1.3573.7751 2.3046 0 .9328-.2609 1.6988-.7749 2.2768zm.775-6.8767c-.8908-.7858-1.8858-1.2444-2.9614-1.2444-1.6305 0-2.9859.5598-4.0276 1.662-1.0555 1.0932-1.5907 2.5006-1.5907 4.1823 0 1.644.5269 3.0464 1.568 4.1709 1.0498 1.088 2.4123 1.6396 4.0503 1.6396 1.139 0 2.1182-.3144 2.9157-.9356v.268c0 .9662-.2608 1.7176-.7751 2.234-.5137.5154-1.226.7764-2.1173.7764-1.3637 0-2.2183-.5314-3.2589-1.9262l-2.0115 1.917.0542.0754c.4346.605 1.1 1.197 1.9785 1.7594.8787.5603 1.9832.8447 3.2832.8447 1.7536 0 3.1726-.5363 4.2172-1.5933 1.0506-1.0628 1.5835-2.486 1.5835-4.2286V11.7294H70.307v.9726zM75.7434 23.3729h2.9541V11.7294h-2.9541zM77.249 6.6376c-.5052 0-.94.1777-1.2906.5254-.3547.335-.5344.7597-.5344 1.2618 0 .501.1789.9322.532 1.2825.353.35.7878.528 1.293.528.5045 0 .9396-.178 1.2928-.528.3535-.3508.5323-.7821.5323-1.2825 0-.5015-.1797-.926-.5323-1.2592-.3532-.3503-.7883-.528-1.2929-.528M85.1724 8.5831h-2.9082v3.1463h-1.6888v2.6702h1.6888v4.8365c0 1.5134.3047 2.5964.9064 3.2181.6031.6247 1.6741.9414 3.1831.9414.48 0 .963-.0156 1.4354-.0463l.133-.0088v-2.6683l-1.013.0526c-.7033 0-1.1728-.1226-1.3961-.3637-.226-.245-.3406-.7636-.3406-1.5404v-4.421h2.7497v-2.6703h-2.7497V8.583M101.7735 23.3729h2.9544V6.8412h-2.9544zM134.5728 19.2094c-.5286.5874-1.0693 1.0966-1.4855 1.3613v.0005c-.4085.2599-.924.3918-1.532.3918-.8703 0-1.5703-.3144-2.1405-.9621-.567-.644-.8545-1.4716-.8545-2.4613s.2838-1.8162.8436-2.4556c.5625-.6434 1.2588-.9562 2.1285-.9562.9515 0 1.9548.5869 2.8145 1.5947l1.9525-1.8568c-1.273-1.6433-2.897-2.4081-4.8352-2.4081-1.622 0-3.028.5862-4.1788 1.7411-1.1446 1.147-1.7251 2.6074-1.7251 4.3409 0 1.7335.58 3.1977 1.7234 4.352 1.1447 1.1557 2.5514 1.7417 4.1805 1.7417 2.139 0 3.8651-.9158 5.029-2.5935l-1.9204-1.8304M140.2405 16.0973c.1422-.5567.401-1.0207.7714-1.381.4005-.3906.9214-.5885 1.5489-.5885.716 0 1.2702.2019 1.6474.6014.3495.3696.5467.8296.588 1.368h-4.5557zm6.4569-2.7414c-.4191-.5788-.9896-1.0448-1.6965-1.3854-.7047-.3404-1.526-.513-2.441-.513-1.6489 0-2.9982.6037-4.0113 1.7946-.9836 1.182-1.4818 2.651-1.4818 4.3665 0 1.7648.547 3.2253 1.6254 4.341 1.0727 1.1105 2.5083 1.6737 4.267 1.6737 1.992 0 3.627-.799 4.8587-2.3752l.0666-.0847-1.9273-1.837c-.1789.2139-.4317.4561-.6628.6722-.2918.273-.5659.4842-.8588.6289-.4415.218-.9369.3255-1.4907.3255-.8187 0-1.4964-.2388-2.0147-.71-.4847-.4403-.768-1.0345-.843-1.7683h7.8265l.0264-1.0693c0-.7569-.1038-1.4862-.3088-2.1677a6.312 6.312 0 0 0-.934-1.8918zM152.797 18.9234c.3352-.2318.8085-.3483 1.4073-.3483.7112 0 1.4654.1413 2.2426.421v1.1421c-.6421.592-1.4996.8922-2.5499.8922-.5114 0-.909-.1126-1.1822-.3355-.2683-.218-.3985-.4955-.3985-.847 0-.3994.1571-.7022.4808-.9245zm5.2452-6.3229h-.0003c-.8952-.758-2.1328-1.143-3.678-1.143-.9829 0-1.902.2144-2.7336.6324-.7691.387-1.5245 1.0275-2.0043 1.8662l.0298.0358 1.8917 1.796c.7791-1.2322 1.6454-1.66 2.7941-1.66.6172 0 1.1298.1643 1.5234.4881.3916.3216.5819.7304.5819 1.249v.5652c-.7324-.221-1.4629-.333-2.1738-.333-1.47 0-2.6663.3432-3.555 1.0193-.9.6852-1.3562 1.665-1.3562 2.9125 0 1.094.3847 1.9829 1.1461 2.6433.7677.6372 1.7275.961 2.8524.961 1.1246 0 2.177-.4495 3.132-1.2191v.9587h2.9089v-7.4852c0-1.4173-.4572-2.523-1.3591-3.2872zM170.7656 12.8285c-.8227-.9092-1.9791-1.371-3.4371-1.371-1.172 0-2.1236.3338-2.8357.9926v-.7207h-2.897v11.6435h2.954v-6.4215c0-.8823.2119-1.5828.6293-2.0826.4162-.4987.989-.741 1.75-.741.6691 0 1.1765.2167 1.5506.662.3759.4474.5662 1.0638.5662 1.8335v6.7496H172v-6.7496c0-1.6127-.415-2.889-1.2344-3.7948M92.8158 18.9234c.3351-.2318.8087-.3483 1.4075-.3483.7112 0 1.4652.1413 2.2426.421v1.1421c-.6421.592-1.4998.8922-2.5502.8922-.5114 0-.9087-.1126-1.1819-.3355-.2683-.218-.3988-.4955-.3988-.847 0-.3994.1574-.7022.4808-.9245zm5.2451-6.3229h-.0003c-.8952-.758-2.1328-1.143-3.6776-1.143-.983 0-1.902.2144-2.7337.6324-.7694.387-1.5247 1.0275-2.0043 1.8662l.0295.0358 1.8917 1.796c.7792-1.2322 1.6458-1.66 2.7941-1.66.6172 0 1.1298.1643 1.5234.4881.3916.3216.5822.7304.5822 1.249v.5652c-.7327-.221-1.4631-.333-2.174-.333-1.47 0-2.6664.3432-3.555 1.0193-.8999.6852-1.3562 1.665-1.3562 2.9125 0 1.094.3847 1.9829 1.1463 2.6433.7677.6372 1.7272.961 2.8524.961 1.1246 0 2.1766-.4495 3.1318-1.2191v.9587H99.42v-7.4852c0-1.4173-.457-2.523-1.359-3.2872zM115.4464 9.5808c-3.0682 0-5.5645 2.4755-5.5645 5.5188s2.4963 5.5188 5.5645 5.5188c3.0682 0 5.5645-2.4755 5.5645-5.5188s-2.4963-5.5188-5.5645-5.5188zm0 14.0408c-4.7383 0-8.5928-3.8228-8.5928-8.522 0-4.6994 3.8545-8.5223 8.5928-8.5223 4.738 0 8.5925 3.8229 8.5925 8.5223 0 4.6992-3.8545 8.522-8.5925 8.522z"></path></g></svg>
+
+</a>
+    <button class="UnifiedMobileNav-toggleButton unified-nav-shims__margin-right-regular" type="button" aria-label="Open account navigation" data-unified-mobile-nav-account-trigger-open="">
+      <div class="UnifiedNavAvatar ">
+        <img alt="sarpixo" class="avatar avatar-small" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/080ece3e9b73bed4173668664c51de4f" width="80" height="80">
+      </div>
+    </button>
+
+    <nav class="UnifiedMobileNav-popUp" role="navigation" aria-hidden="true" data-unified-mobile-nav-account-popup="">
+  <button class="UnifiedMobileNav-toggleButton UnifiedMobileNav-popUpCloseButton" type="button" aria-label="Close account navigation" data-unified-mobile-nav-account-trigger-close="">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" class="UnifiedMobileNav-toggleButtonSVG UnifiedMobileNav-closeButtonSVG"><path d="M14.8284 12l4.2427 4.2426c.781.781.781 2.0474 0 2.8285-.781.781-2.0474.781-2.8285 0L12 14.8284l-4.2426 4.2427c-.781.781-2.0474.781-2.8285 0-.781-.781-.781-2.0474 0-2.8285L9.1716 12 4.9289 7.7574c-.781-.781-.781-2.0474 0-2.8285.781-.781 2.0474-.781 2.8285 0L12 9.1716l4.2426-4.2427c.781-.781 2.0474-.781 2.8285 0 .781.781.781 2.0474 0 2.8285L14.8284 12z" fill-rule="evenodd"></path></svg>
+
+  </button>
+
+  <div class="UnifiedMobileNav-section">
+    <div class="unified-nav-shims__user">
+      <div class="UnifiedNavAvatar UnifiedNavAvatar--medium unified-nav-shims__margin-right-regular">
+        <img alt="sarpixo" class="avatar avatar-small" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/080ece3e9b73bed4173668664c51de4f" width="80" height="80">
+      </div>
+
+      sarpixo
+    </div>
+  </div>
+
+  <div class="UnifiedMobileNav-section">
+    <ul class="UnifiedMobileNav-list">
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-secondaryLink" href="https://www.digitalocean.com/community/notifications">
+          Notifications
+
+</a>      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-secondaryLink" href="https://www.digitalocean.com/community/users/sarpixo">Profile</a>
+      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-secondaryLink" href="https://www.digitalocean.com/community/users/sarpixo/subscriptions">Subscriptions</a>
+      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-secondaryLink" href="https://www.digitalocean.com/community/users/sarpixo?isEditing=true">Account Settings</a>
+      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-secondaryLink" rel="nofollow" data-method="delete" href="https://www.digitalocean.com/community/auth">Logout</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+
+  <button class="UnifiedMobileNav-toggleButton" type="button" aria-label="Open navigation" data-unified-mobile-nav-trigger-open="">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" class="UnifiedMobileNav-toggleButtonSVG UnifiedMobileNav-openButtonSVG"><g transform="translate(0 1)" fill-rule="evenodd"><rect width="24" height="3.5" rx="1.75"></rect><rect y="9" width="24" height="3.5" rx="1.75"></rect><rect y="18" width="24" height="3.5" rx="1.75"></rect></g></svg>
+
+  </button>
+
+  <nav class="UnifiedMobileNav-popUp" role="navigation" aria-hidden="true" data-unified-mobile-nav-popup="">
+  <button class="UnifiedMobileNav-toggleButton UnifiedMobileNav-popUpCloseButton" type="button" aria-label="Close navigation" data-unified-mobile-nav-trigger-close="">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" class="UnifiedMobileNav-toggleButtonSVG UnifiedMobileNav-closeButtonSVG"><path d="M14.8284 12l4.2427 4.2426c.781.781.781 2.0474 0 2.8285-.781.781-2.0474.781-2.8285 0L12 14.8284l-4.2426 4.2427c-.781.781-2.0474.781-2.8285 0-.781-.781-.781-2.0474 0-2.8285L9.1716 12 4.9289 7.7574c-.781-.781-.781-2.0474 0-2.8285.781-.781 2.0474-.781 2.8285 0L12 9.1716l4.2426-4.2427c.781-.781 2.0474-.781 2.8285 0 .781.781.781 2.0474 0 2.8285L14.8284 12z" fill-rule="evenodd"></path></svg>
+
+  </button>
+
+  <div class="UnifiedMobileNav-section">
+    <ul class="UnifiedMobileNav-list">
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-primaryLink" href="https://www.digitalocean.com/products/droplets/">
+          <svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 45 45" aria-hidden="true" class="UnifiedMobileNav-productIcon"><g stroke="#0069FF" stroke-width="2" fill="none" fill-rule="evenodd"><path d="M22.6 41.2C14.2 41.2 7 34.3 7 25.8 7 12.9 22.6 4.2 22.6 4.2s15.6 9 15.6 21.7c0 8.4-7.1 15.3-15.6 15.3z"></path><path d="M22.6 30.8c-2.9 0-5.2-2.3-5.2-5.2 0-4 5.2-7.8 5.2-7.8s5.2 3.7 5.2 7.8c0 2.9-2.3 5.2-5.2 5.2z"></path></g></svg>
+
+
+          Droplets
+</a>      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-primaryLink" href="https://www.digitalocean.com/products/spaces/">
+          <svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 45 45" aria-hidden="true" class="UnifiedMobileNav-productIcon"><g transform="translate(4 4)" fill="#0069FF" fill-rule="nonzero"><path d="M6.5 7.6c.4 0 .7-.1 1-.3.3-.3.5-.6.5-1s-.1-.7-.3-1c-.2-.3-.6-.5-1-.5h-.1c-.7 0-1.4.6-1.4 1.3 0 .4.1.7.3 1 .3.3.6.5 1 .5zM2.7 13.3c.8 0 1.4-.5 1.5-1.3 0-.4-.1-.7-.3-1-.2-.3-.6-.5-1-.5h-.1c-.7 0-1.4.6-1.4 1.3 0 .4.1.7.3 1 .2.3.6.4 1 .5zM2.8 18.6c0-.4-.1-.7-.3-1-.2-.3-.6-.5-1-.5h-.1c-.3 0-.7.1-.9.3-.3.2-.5.6-.5 1s.1.7.3 1c.2.3.6.5 1 .5.8.1 1.5-.5 1.5-1.3zM2.8 23.9c-.4 0-.8.1-1 .3-.3.2-.5.6-.5 1s.1.7.3 1c.2.3.6.5 1 .5s.7-.1 1-.3c.3-.2.5-.6.5-1 .1-.8-.5-1.5-1.3-1.5zM6.7 29.6c-.8 0-1.5.6-1.5 1.3 0 .4.1.7.3 1 .2.3.6.5 1 .5s.7-.1 1-.3c.3-.2.5-.6.5-1s-.1-.7-.3-1c-.2-.3-.6-.4-1-.5zM12.4 33.3c-.4 0-.8.1-1 .3-.3.2-.5.6-.5 1s.1.7.3 1c.2.3.6.5 1 .5s.7-.1 1-.3c.3-.2.5-.6.5-1s-.1-.7-.3-1c-.3-.3-.6-.5-1-.5z"></path><circle cx="25.1" cy="27" r="1.4"></circle><circle cx="28.8" cy="21.8" r="1.4"></circle><circle cx="28.9" cy="15.5" r="1.4"></circle><circle cx="25" cy="10.1" r="1.4"></circle><path d="M12.3 3.8c.8 0 1.4-.5 1.5-1.3.1-.8-.6-1.5-1.3-1.5h-.1c-.3 0-.7.1-.9.3-.3.2-.5.6-.5 1s.1.7.3 1c.2.3.6.5 1 .5zM18.6 30.1v-2.4c-4.9-.2-8.9-4.2-8.9-9.2 0-5 3.9-9 8.9-9.2V6.9c-6.2.2-11.3 5.3-11.3 11.6s5.1 11.4 11.3 11.6zM19.2 0v2.4c8.8.2 15.9 7.4 15.9 16.2 0 8.8-7.1 16-15.9 16.2v2.4c10.1-.2 18.3-8.5 18.3-18.6C37.5 8.5 29.3.2 19.2 0z"></path></g></svg>
+
+
+          Spaces
+</a>      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-primaryLink" href="https://www.digitalocean.com/products/kubernetes/">
+          <svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 45 45" aria-hidden="true" class="UnifiedMobileNav-productIcon"><path fill="none" stroke="#0069FF" stroke-width="2" d="M36.779 23.119c0 7.962-6.454 14.416-14.416 14.416-7.962 0-14.416-6.454-14.416-14.416 0-7.962 6.454-14.417 14.416-14.417 7.962 0 14.416 6.455 14.416 14.417zm-9.212.031c0 2.844-2.306 5.151-5.151 5.151-2.845 0-5.151-2.307-5.151-5.151 0-2.845 2.306-5.151 5.151-5.151 2.845 0 5.151 2.306 5.151 5.151zm-5.153-5.291V3.435v14.424zM6.999 10.598l11.22 9.136-11.22-9.136zm30.833 0l-11.219 9.136 11.219-9.136zm4.001 16.795l-14.11-3.095 14.11 3.095zM3 27.393l14.11-3.095L3 27.393zM31.2 41l-6.405-13.343L31.2 41zm-17.558 0l6.304-13.343L13.642 41z"></path></svg>
+
+
+          Kubernetes
+</a>      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-primaryLink" href="https://www.digitalocean.com/products/load-balancer/">
+          <svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 45 45" aria-hidden="true" class="UnifiedMobileNav-productIcon"><g fill="none" fill-rule="evenodd" stroke="#0069FF" stroke-width="2" transform="translate(11 4)"><ellipse cx="12" cy="21" rx="10" ry="3"></ellipse><path d="M12 9S0 17.575 0 26.342C0 32.797 5.355 38 12 38c6.644 0 12-5.203 12-11.658C24.098 17.864 12 9 12 9z"></path><path stroke-dasharray="0,4" stroke-linecap="round" d="M2.5 5v7M23.5 7v8M9.5 0v7M16.5 2v7"></path></g></svg>
+
+
+          Load Balancers
+</a>      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-primaryLink" href="https://www.digitalocean.com/products/block-storage/">
+          <svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 45 45" aria-hidden="true" class="UnifiedMobileNav-productIcon"><g fill="none" fill-rule="evenodd" stroke="#0069FF" stroke-width="2"><path stroke-dasharray="0,4" stroke-linecap="round" d="M22.426 23.373V4.745M7.37 32.388l14.983-9.313 15.058 9.239"></path><path d="M22.426 23.075v18.627m.074-18.33L7.443 14.134M37.557 14.059L22.5 23.373M7.369 13.76v18.554l14.983 9.313 15.058-9.313V13.686L22.352 4.447z"></path></g></svg>
+
+
+          Block Storage
+</a>      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-primaryLink" href="https://www.digitalocean.com/products/one-click-apps/">
+          <svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 45 45" aria-hidden="true" class="UnifiedMobileNav-productIcon"><g fill="#005DFF" fill-rule="nonzero"><path d="M36.7 40.3c-.3 0-.5-.1-.7-.3l-5.4-5.3-2.2 4.2c-.2.4-.6.6-1 .5-.4 0-.7-.3-.9-.7L20.1 21c-.1-.4 0-.8.2-1 .3-.3.7-.4 1-.2L39 26.2c.4.1.6.5.7.9 0 .4-.2.8-.5 1L35 30.2l5.4 5.3c.2.2.3.4.3.7 0 .3-.1.5-.3.7L37.5 40c-.2.2-.5.3-.8.3zm-6.3-8.2c.3 0 .5.1.7.3l5.7 5.6 1.6-1.6-5.7-5.5c-.2-.2-.3-.5-.3-.9 0-.3.2-.6.5-.7l3.4-1.7-13.5-4.9L27.7 36l1.8-3.4c.1-.3.4-.5.7-.5h.2zM9.177 10.126l1.414-1.414 6.86 6.859-1.415 1.414zM20.4 5.4h2V15h-2zM25.47 15.52l6.293-6.293 1.414 1.415-6.293 6.293zM5.5 20.1h10v2h-10zM9.197 31.914l6.647-6.646 1.415 1.414-6.647 6.647z"></path></g></svg>
+
+
+          One-Click Apps
+</a>      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-primaryLink" href="https://developers.digitalocean.com/documentation/">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" class="UnifiedMobileNav-productIcon"><g stroke="#0069FF" fill="none" fill-rule="evenodd"><path d="M3.4 17.5h12.2c.8 0 1.5-.7 1.5-1.5V3.8c0-.7-.6-1.3-1.3-1.3H6c-.7 0-1.3.6-1.3 1.3V16c.1.9-.5 1.5-1.3 1.5S2 16.9 2 16.1v-5h2.8M14.3 9H7.8M14.3 11.5H7.8M14.3 14H7.8M4.8 5.4H17"></path></g></svg>
+
+
+          API Documentation
+</a>      </li>
+    </ul>
+  </div>
+
+  <div class="UnifiedMobileNav-section">
+    <ul class="UnifiedMobileNav-list UnifiedMobileNav--columned">
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-secondaryLink" href="https://www.digitalocean.com/community">Community</a>
+      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-secondaryLink" href="https://www.digitalocean.com/community/tutorials">Tutorials</a>
+      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-secondaryLink" href="https://www.digitalocean.com/community/questions">Q&amp;A</a>
+      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-secondaryLink" href="https://www.digitalocean.com/community/projects">Projects</a>
+      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-secondaryLink" href="https://www.meetup.com/pro/digitalocean/?utm_source=do_community/">Meetups</a>
+      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-secondaryLink" href="https://www.digitalocean.com/customers/">Customers</a>
+      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-secondaryLink" href="https://www.digitalocean.com/pricing/">Pricing</a>
+      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-secondaryLink" href="https://www.digitalocean.com/docs/">Docs</a>
+      </li>
+
+      <li class="UnifiedMobileNav-ListItem">
+        <a class="UnifiedMobileNav-secondaryLink" href="https://www.digitalocean.com/company/contact/">Support</a>
+      </li>
+
+    </ul>
+  </div>
+
+  <div class="UnifiedMobileNav-section">
+    <form action="https://www.digitalocean.com/community/search" accept-charset="UTF-8" method="get"><input name="utf8" type="hidden" value="✓">
+      <input type="text" name="q" id="q" aria-label="Search Community" placeholder="Search Community" autocomplete="off" spellcheck="false" class="UnifiedMobileNav-searchInput" data-algolia-application-id="6ZHEUVKJ88" data-algolia-api-key="c5470567eae7fa1177d43222e18ba086" data-unified-nav-search-input="true">
+</form>
+  </div>
+</nav>
+
+</div>
+
+  <div class="UnifiedNav " data-unified-nav="">
+  <nav class="unified-nav-shims__container" role="navigation">
+    <ul class="UnifiedNav-list">
+      <li clas="UnifiedNav-listItem">
+        <a class="UnifiedNav-siteLogo" href="https://www.digitalocean.com/">
+          <svg width="172" height="29" xmlns="http://www.w3.org/2000/svg"><title>DigitalOcean home</title><g class="UnifiedNav-logoSVG" fill-rule="evenodd"><path d="M14.4942 29v-5.5674c5.9572 0 10.5633-5.8478 8.2892-12.059-.8425-2.3006-2.693-4.1355-5.0126-4.9706-6.262-2.2534-12.1564 2.3135-12.1573 8.2207 0 0-.0006.0014-.0014.0014H0C0 5.2123 9.1687-2.1167 19.1138.9624c4.3459 1.3457 7.7993 4.7708 9.1561 9.081C31.3742 19.9068 23.985 29 14.4942 29"></path><path d="M14.507 23.4468H8.9103v-5.549s.0005-.0011.0011-.0011h5.5949c.0006 0 .0009.0006.0009.0006v5.5495M8.9093 27.7118H4.6105l-.0012-.0012v-4.2638h4.3009v4.2638l-.0009.0012M4.6125 23.4468H1.0088c-.0015 0-.0026-.0012-.0026-.0012v-3.5724s.0011-.0025.0026-.0025h3.601c.0015 0 .0027.0011.0027.0011v3.575M43.2806 9.6357h1.649c1.8346 0 3.345.358 4.49 1.0647 1.2714.7603 1.9164 2.2069 1.9164 4.2991 0 2.1554-.6465 3.6671-1.9207 4.4942h-.0008c-1.0971.7196-2.5981 1.0846-4.462 1.0846h-1.6719V9.6357zm8.324-1.0736c-1.6598-1.142-3.7252-1.721-6.1387-1.721h-5.2537V23.373h5.2537c2.4074 0 4.4737-.6113 6.1407-1.8157.907-.6382 1.6197-1.5304 2.1185-2.651.4962-1.1144.7479-2.4288.7479-3.9067 0-1.4605-.2517-2.758-.7482-3.857-.4988-1.104-1.212-1.972-2.1202-2.5804zM58.1303 6.6376c-.5051 0-.9403.1777-1.2906.5254-.3546.335-.5346.7597-.5346 1.2618 0 .501.1791.9322.532 1.2825.3529.35.788.528 1.2932.528.5042 0 .9394-.178 1.2928-.528.3535-.3508.5324-.7821.5324-1.2825 0-.5015-.18-.926-.5324-1.2592-.3534-.3503-.7886-.528-1.2928-.528M56.6247 23.3729h2.9538V11.7294h-2.9538zM69.5321 19.5787c-.5162.5814-1.1793.8635-2.0264.8635-.8471 0-1.5064-.282-2.015-.863-.5065-.5777-.7637-1.3439-.7637-2.2773 0-.9479.2572-1.7238.764-2.3058.502-.576 1.1796-.8683 2.0147-.8683.8465 0 1.5096.284 2.0262.8695.5142.582.7751 1.3573.7751 2.3046 0 .9328-.2609 1.6988-.7749 2.2768zm.775-6.8767c-.8908-.7858-1.8858-1.2444-2.9614-1.2444-1.6305 0-2.9859.5598-4.0276 1.662-1.0555 1.0932-1.5907 2.5006-1.5907 4.1823 0 1.644.5269 3.0464 1.568 4.1709 1.0498 1.088 2.4123 1.6396 4.0503 1.6396 1.139 0 2.1182-.3144 2.9157-.9356v.268c0 .9662-.2608 1.7176-.7751 2.234-.5137.5154-1.226.7764-2.1173.7764-1.3637 0-2.2183-.5314-3.2589-1.9262l-2.0115 1.917.0542.0754c.4346.605 1.1 1.197 1.9785 1.7594.8787.5603 1.9832.8447 3.2832.8447 1.7536 0 3.1726-.5363 4.2172-1.5933 1.0506-1.0628 1.5835-2.486 1.5835-4.2286V11.7294H70.307v.9726zM75.7434 23.3729h2.9541V11.7294h-2.9541zM77.249 6.6376c-.5052 0-.94.1777-1.2906.5254-.3547.335-.5344.7597-.5344 1.2618 0 .501.1789.9322.532 1.2825.353.35.7878.528 1.293.528.5045 0 .9396-.178 1.2928-.528.3535-.3508.5323-.7821.5323-1.2825 0-.5015-.1797-.926-.5323-1.2592-.3532-.3503-.7883-.528-1.2929-.528M85.1724 8.5831h-2.9082v3.1463h-1.6888v2.6702h1.6888v4.8365c0 1.5134.3047 2.5964.9064 3.2181.6031.6247 1.6741.9414 3.1831.9414.48 0 .963-.0156 1.4354-.0463l.133-.0088v-2.6683l-1.013.0526c-.7033 0-1.1728-.1226-1.3961-.3637-.226-.245-.3406-.7636-.3406-1.5404v-4.421h2.7497v-2.6703h-2.7497V8.583M101.7735 23.3729h2.9544V6.8412h-2.9544zM134.5728 19.2094c-.5286.5874-1.0693 1.0966-1.4855 1.3613v.0005c-.4085.2599-.924.3918-1.532.3918-.8703 0-1.5703-.3144-2.1405-.9621-.567-.644-.8545-1.4716-.8545-2.4613s.2838-1.8162.8436-2.4556c.5625-.6434 1.2588-.9562 2.1285-.9562.9515 0 1.9548.5869 2.8145 1.5947l1.9525-1.8568c-1.273-1.6433-2.897-2.4081-4.8352-2.4081-1.622 0-3.028.5862-4.1788 1.7411-1.1446 1.147-1.7251 2.6074-1.7251 4.3409 0 1.7335.58 3.1977 1.7234 4.352 1.1447 1.1557 2.5514 1.7417 4.1805 1.7417 2.139 0 3.8651-.9158 5.029-2.5935l-1.9204-1.8304M140.2405 16.0973c.1422-.5567.401-1.0207.7714-1.381.4005-.3906.9214-.5885 1.5489-.5885.716 0 1.2702.2019 1.6474.6014.3495.3696.5467.8296.588 1.368h-4.5557zm6.4569-2.7414c-.4191-.5788-.9896-1.0448-1.6965-1.3854-.7047-.3404-1.526-.513-2.441-.513-1.6489 0-2.9982.6037-4.0113 1.7946-.9836 1.182-1.4818 2.651-1.4818 4.3665 0 1.7648.547 3.2253 1.6254 4.341 1.0727 1.1105 2.5083 1.6737 4.267 1.6737 1.992 0 3.627-.799 4.8587-2.3752l.0666-.0847-1.9273-1.837c-.1789.2139-.4317.4561-.6628.6722-.2918.273-.5659.4842-.8588.6289-.4415.218-.9369.3255-1.4907.3255-.8187 0-1.4964-.2388-2.0147-.71-.4847-.4403-.768-1.0345-.843-1.7683h7.8265l.0264-1.0693c0-.7569-.1038-1.4862-.3088-2.1677a6.312 6.312 0 0 0-.934-1.8918zM152.797 18.9234c.3352-.2318.8085-.3483 1.4073-.3483.7112 0 1.4654.1413 2.2426.421v1.1421c-.6421.592-1.4996.8922-2.5499.8922-.5114 0-.909-.1126-1.1822-.3355-.2683-.218-.3985-.4955-.3985-.847 0-.3994.1571-.7022.4808-.9245zm5.2452-6.3229h-.0003c-.8952-.758-2.1328-1.143-3.678-1.143-.9829 0-1.902.2144-2.7336.6324-.7691.387-1.5245 1.0275-2.0043 1.8662l.0298.0358 1.8917 1.796c.7791-1.2322 1.6454-1.66 2.7941-1.66.6172 0 1.1298.1643 1.5234.4881.3916.3216.5819.7304.5819 1.249v.5652c-.7324-.221-1.4629-.333-2.1738-.333-1.47 0-2.6663.3432-3.555 1.0193-.9.6852-1.3562 1.665-1.3562 2.9125 0 1.094.3847 1.9829 1.1461 2.6433.7677.6372 1.7275.961 2.8524.961 1.1246 0 2.177-.4495 3.132-1.2191v.9587h2.9089v-7.4852c0-1.4173-.4572-2.523-1.3591-3.2872zM170.7656 12.8285c-.8227-.9092-1.9791-1.371-3.4371-1.371-1.172 0-2.1236.3338-2.8357.9926v-.7207h-2.897v11.6435h2.954v-6.4215c0-.8823.2119-1.5828.6293-2.0826.4162-.4987.989-.741 1.75-.741.6691 0 1.1765.2167 1.5506.662.3759.4474.5662 1.0638.5662 1.8335v6.7496H172v-6.7496c0-1.6127-.415-2.889-1.2344-3.7948M92.8158 18.9234c.3351-.2318.8087-.3483 1.4075-.3483.7112 0 1.4652.1413 2.2426.421v1.1421c-.6421.592-1.4998.8922-2.5502.8922-.5114 0-.9087-.1126-1.1819-.3355-.2683-.218-.3988-.4955-.3988-.847 0-.3994.1574-.7022.4808-.9245zm5.2451-6.3229h-.0003c-.8952-.758-2.1328-1.143-3.6776-1.143-.983 0-1.902.2144-2.7337.6324-.7694.387-1.5247 1.0275-2.0043 1.8662l.0295.0358 1.8917 1.796c.7792-1.2322 1.6458-1.66 2.7941-1.66.6172 0 1.1298.1643 1.5234.4881.3916.3216.5822.7304.5822 1.249v.5652c-.7327-.221-1.4631-.333-2.174-.333-1.47 0-2.6664.3432-3.555 1.0193-.8999.6852-1.3562 1.665-1.3562 2.9125 0 1.094.3847 1.9829 1.1463 2.6433.7677.6372 1.7272.961 2.8524.961 1.1246 0 2.1766-.4495 3.1318-1.2191v.9587H99.42v-7.4852c0-1.4173-.457-2.523-1.359-3.2872zM115.4464 9.5808c-3.0682 0-5.5645 2.4755-5.5645 5.5188s2.4963 5.5188 5.5645 5.5188c3.0682 0 5.5645-2.4755 5.5645-5.5188s-2.4963-5.5188-5.5645-5.5188zm0 14.0408c-4.7383 0-8.5928-3.8228-8.5928-8.522 0-4.6994 3.8545-8.5223 8.5928-8.5223 4.738 0 8.5925 3.8229 8.5925 8.5223 0 4.6992-3.8545 8.522-8.5925 8.522z"></path></g></svg>
+
+</a>      </li>
+
+      <li class="UnifiedNav-listItem UnifiedNav-listItem--extraSpace" data-unified-nav-dropdown-component="">
+        <a class="UnifiedNav-link" data-unified-nav-dropdown-trigger="true" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04#">
+          Products
+
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32" class="UnifiedNavDropdown-chevron">
+  <path d="M31.296 7.68c-.256-.32-.704-.512-1.216-.512-.448 0-.896.192-1.216.512L16 20.736 3.2 7.68c-.256-.32-.704-.512-1.216-.512-.448 0-.896.192-1.216.448S.256 8.32.256 8.768c0 .512.192.96.512 1.28L14.72 24.32c.32.32.704.512 1.152.512.256 0 .512-.064.768-.192.128-.064.256-.128.384-.128l.128-.064 14.016-14.336c.768-.64.704-1.728.128-2.432z"></path>
+</svg>
+
+</a>
+        <div class="UnifiedNavDropdown" data-unified-nav-dropdown-content="">
+  <ul class="UnifiedNavDropdown-list">
+
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive">
+  <a href="https://www.digitalocean.com/products/droplets/">
+    <div class="UnifiedNavDropdown-link">
+      <div class="UnifiedNavDropdown-link-icon">
+        <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/droplets-8c0da195b507fa4eedeca0ceb242910b.svg">
+      </div>
+      <div class="UnifiedNavDropdown-link-content">
+        <p class="UnifiedNavDropdown-link-contentTitle">
+          Droplets
+        </p>
+        <p class="UnifiedNavDropdown-link-contentDescription">
+          Scalable compute services.
+        </p>
+      </div>
+    </div>
+</a></li>
+
+
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive">
+  <a href="https://www.digitalocean.com/products/spaces/">
+    <div class="UnifiedNavDropdown-link">
+      <div class="UnifiedNavDropdown-link-icon">
+        <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/spaces-2e58e376eb8351928201edb669534578.svg">
+      </div>
+      <div class="UnifiedNavDropdown-link-content">
+        <p class="UnifiedNavDropdown-link-contentTitle">
+          Spaces
+        </p>
+        <p class="UnifiedNavDropdown-link-contentDescription">
+          Simple object storage.
+        </p>
+      </div>
+    </div>
+</a></li>
+
+
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive">
+  <a href="https://www.digitalocean.com/products/kubernetes/">
+    <div class="UnifiedNavDropdown-link">
+      <div class="UnifiedNavDropdown-link-icon">
+        <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/kubernetes-f2d12fcd6216cb404dac3a41cfd7a6d3.svg">
+      </div>
+      <div class="UnifiedNavDropdown-link-content">
+        <p class="UnifiedNavDropdown-link-contentTitle">
+          Kubernetes
+        </p>
+        <p class="UnifiedNavDropdown-link-contentDescription">
+          Run managed Kubernetes clusters.
+        </p>
+      </div>
+    </div>
+</a></li>
+
+
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive">
+  <a href="https://www.digitalocean.com/products/load-balancer/">
+    <div class="UnifiedNavDropdown-link">
+      <div class="UnifiedNavDropdown-link-icon">
+        <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/load-balancers-fcdf1aa81a04c044fe3f9aed9d30ff02.svg">
+      </div>
+      <div class="UnifiedNavDropdown-link-content">
+        <p class="UnifiedNavDropdown-link-contentTitle">
+          Load Balancers
+        </p>
+        <p class="UnifiedNavDropdown-link-contentDescription">
+          Easily distribute traffic.
+        </p>
+      </div>
+    </div>
+</a></li>
+
+
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive">
+  <a href="https://www.digitalocean.com/products/block-storage/">
+    <div class="UnifiedNavDropdown-link">
+      <div class="UnifiedNavDropdown-link-icon">
+        <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/block-storage-9990b142db125078e860c66644ef99b7.svg">
+      </div>
+      <div class="UnifiedNavDropdown-link-content">
+        <p class="UnifiedNavDropdown-link-contentTitle">
+          Block Storage
+        </p>
+        <p class="UnifiedNavDropdown-link-contentDescription">
+          Attach scalable volumes.
+        </p>
+      </div>
+    </div>
+</a></li>
+
+
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive">
+  <a href="https://www.digitalocean.com/products/one-click-apps/">
+    <div class="UnifiedNavDropdown-link">
+      <div class="UnifiedNavDropdown-link-icon">
+        <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/one-click-apps-f0005e5882ea1edfc9fdb04b424fce58.svg">
+      </div>
+      <div class="UnifiedNavDropdown-link-content">
+        <p class="UnifiedNavDropdown-link-contentTitle">
+          One-Click Apps
+        </p>
+        <p class="UnifiedNavDropdown-link-contentDescription">
+          Deploy pre-built applications.
+        </p>
+      </div>
+    </div>
+</a></li>
+
+
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--borderedTop UnifiedNavDropdown-item--interactive">
+      <a href="https://developers.digitalocean.com/documentation/">
+        <div class="UnifiedNavDropdown-link UnifiedNavDropdown-link--centered UnifiedNavDropdown-link--small">
+          <div class="UnifiedNavDropdown-link-icon">
+            <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/Documentation-264262b8b0785ce36dd159e115ad0759.svg">
+          </div>
+          <span class="UnifiedNavDropdown-link-content">
+            API Documentation
+          </span>
+        </div>
+</a>    </li>
+  </ul>
+</div>
+
+      </li>
+
+      <li class="UnifiedNav-listItem">
+        <a class="UnifiedNav-link" href="https://www.digitalocean.com/customers/">Customers</a>
+      </li>
+
+      <li class="UnifiedNav-listItem" data-unified-nav-dropdown-component="">
+        <a class="UnifiedNav-link UnifiedNav-link--community" data-unified-nav-dropdown-trigger="true" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04#">
+          <span class="UnifiedNav-linkText">Community</span>
+
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32" class="UnifiedNavDropdown-chevron">
+  <path d="M31.296 7.68c-.256-.32-.704-.512-1.216-.512-.448 0-.896.192-1.216.512L16 20.736 3.2 7.68c-.256-.32-.704-.512-1.216-.512-.448 0-.896.192-1.216.448S.256 8.32.256 8.768c0 .512.192.96.512 1.28L14.72 24.32c.32.32.704.512 1.152.512.256 0 .512-.064.768-.192.128-.064.256-.128.384-.128l.128-.064 14.016-14.336c.768-.64.704-1.728.128-2.432z"></path>
+</svg>
+
+</a>
+        <div class="UnifiedNavDropdown" data-unified-nav-dropdown-content="">
+  <ul class="UnifiedNavDropdown-list">
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive">
+  <a href="https://www.digitalocean.com/community">
+    <div class="UnifiedNavDropdown-link">
+      <div class="UnifiedNavDropdown-link-icon">
+        <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/CommunityOverview-1019dcfb0f684b3302e471081336a21a.svg">
+      </div>
+      <div class="UnifiedNavDropdown-link-content">
+        <p class="UnifiedNavDropdown-link-contentTitle">
+          Community Overview
+        </p>
+        <p class="UnifiedNavDropdown-link-contentDescription">
+          Connect, share and learn
+        </p>
+      </div>
+    </div>
+</a></li>
+
+
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive">
+  <a href="https://www.digitalocean.com/community/tutorials">
+    <div class="UnifiedNavDropdown-link">
+      <div class="UnifiedNavDropdown-link-icon">
+        <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/Tutorials-b6da4f195d0a2a0138b8fd170c36f1bb.svg">
+      </div>
+      <div class="UnifiedNavDropdown-link-content">
+        <p class="UnifiedNavDropdown-link-contentTitle">
+          Tutorials
+        </p>
+        <p class="UnifiedNavDropdown-link-contentDescription">
+          DevOps and development guides
+        </p>
+      </div>
+    </div>
+</a></li>
+
+
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive">
+  <a href="https://www.digitalocean.com/community/questions">
+    <div class="UnifiedNavDropdown-link">
+      <div class="UnifiedNavDropdown-link-icon">
+        <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/QandA-3e0367f422de8278d660c770f3bb7709.svg">
+      </div>
+      <div class="UnifiedNavDropdown-link-content">
+        <p class="UnifiedNavDropdown-link-contentTitle">
+          Questions &amp; Answers
+        </p>
+        <p class="UnifiedNavDropdown-link-contentDescription">
+          Development and systems Q&amp;A
+        </p>
+      </div>
+    </div>
+</a></li>
+
+
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive">
+  <a href="https://www.digitalocean.com/community/projects">
+    <div class="UnifiedNavDropdown-link">
+      <div class="UnifiedNavDropdown-link-icon">
+        <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/Projects-f56d9a0622a9e104071806947dae4d69.svg">
+      </div>
+      <div class="UnifiedNavDropdown-link-content">
+        <p class="UnifiedNavDropdown-link-contentTitle">
+          Projects
+        </p>
+        <p class="UnifiedNavDropdown-link-contentDescription">
+          Community-built integrations
+        </p>
+      </div>
+    </div>
+</a></li>
+
+  </ul>
+  <div class="UnifiedNavDropdown-split">
+    <dl class="UnifiedNavDropdown-splitSection">
+      <dt class="UnifiedNavDropdown-splitSection-label">
+        Get Involved
+      </dt>
+      <dd class="UnifiedNavDropdown-splitSection-linkLine">
+        <a class="UnifiedNavDropdown-splitSection-link" href="https://www.digitalocean.com/write-for-donations">Write for DOnations</a>
+      </dd>
+      <dd class="UnifiedNavDropdown-splitSection-linkLine">
+        <a target="_blank" class="UnifiedNavDropdown-splitSection-link" href="https://www.meetup.com/pro/digitalocean/?utm_source=do_community/">Join us at a Meetup</a>
+      </dd>
+    </dl>
+    <dl class="UnifiedNavDropdown-splitSection">
+      <dt class="UnifiedNavDropdown-splitSection-label">
+        Featured Post
+      </dt>
+      <dd class="UnifiedNavDropdown-splitSection-linkLine">
+        <a class="UnifiedNavDropdown-splitSection-link" href="https://www.digitalocean.com/community/tutorials/an-introduction-to-kubernetes">An Introduction to Kubernetes</a>
+        <p class="UnifiedNavDropdown-splitSection-extraText">
+          by Justin Ellingwood
+        </p>
+      </dd>
+    </dl>
+  </div>
+</div>
+
+      </li>
+
+      <li class="UnifiedNav-listItem UnifiedNav-spaceRight">
+        <a class="UnifiedNav-link" href="https://www.digitalocean.com/pricing/">Pricing</a>
+      </li>
+
+      <li class="UnifiedNav-listItem UnifiedNav-listItem--extraSpace">
+        <div class="UnifiedNavSearch-wrap">
+          <div class="UnifiedNavSearch" data-unified-nav-search-component="">
+            <a class="UnifiedNavSearch-link" data-unified-nav-search-trigger="true" href="https://www.digitalocean.com/community/search">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" class="UnifiedNavSearch-icon">
+  <g transform="translate(1 1)" fill="currentColor" fill-rule="evenodd">
+    <path d="M6,12 C2.6862915,12 0,9.3137085 0,6 C0,2.6862915 2.6862915,0 6,0 C9.3137085,0 12,2.6862915 12,6 C12,9.3137085 9.3137085,12 6,12 Z M6,10 C8.209139,10 10,8.209139 10,6 C10,3.790861 8.209139,2 6,2 C3.790861,2 2,3.790861 2,6 C2,8.209139 3.790861,10 6,10 Z" fill-rule="nonzero"></path>
+    <rect transform="rotate(-45 11.828 11.828)" x="10.828" y="8.828" width="2" height="6" rx="1"></rect>
+  </g>
+</svg>
+
+</a>            <div class="UnifiedNavSearch-box" data-unified-nav-search-box="">
+              <form action="https://www.digitalocean.com/community/search" accept-charset="UTF-8" method="get"><input name="utf8" type="hidden" value="✓">
+                <input type="text" name="q" id="q" title="Search" placeholder="Search" autocomplete="off" spellcheck="false" class="header-search__input UnifiedNavSearch-input" data-algolia-application-id="6ZHEUVKJ88" data-algolia-api-key="c5470567eae7fa1177d43222e18ba086" data-unified-nav-search-input="true">
+</form>              <button class="UnifiedNavSearch-closeButton" data-unified-nav-search-close="">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" role="img" aria-labelledby="s8ie6dh2yd9ten1hywgxncrp6pgigj9" class="UnifiedNavSearch-closeIcon"><title id="s8ie6dh2yd9ten1hywgxncrp6pgigj9">Close search</title>
+  <g transform="rotate(45 6.293 8.707)" fill="currentColor" fill-rule="evenodd">
+    <rect x="-1" y="6" width="16" height="2" rx="1"></rect>
+    <rect x="6" y="-1" width="2" height="16" rx="1"></rect>
+  </g>
+</svg>
+
+              </button>
+            </div>
+          </div>
+          <div class="search-results-dropdown dropdown" data-root-path="https://www.digitalocean.com/community">
+  <div class="container">
+    <div class="header-search-results-list"></div>
+
+    <div id="btn-wrap">
+      <a class="more-search-results" data-search-path="/community/search" href="https://www.digitalocean.com/community/search">
+        <span class="icon-mag"></span>
+        View All Results
+</a>    </div>
+  </div>
+</div>
+
+<script type="text/template" id="autocomplete-hits-template">
+  <div class="inner-search">
+    <ul>
+        {{#hits}}
+          <li>
+            <span class='icon icon-{{type}}'></span>
+            <a href='{{url}}'>{{title}}</a>
+          </li>
+        {{/hits}}
+    </ul>
+  </div>
+</script>
+
+        </div>
+      </li>
+
+      <li class="UnifiedNav-listItem">
+        <a class="UnifiedNav-link UnifiedNav-link--docs" href="https://www.digitalocean.com/docs/">
+          <span class="UnifiedNav-linkText">Docs</span>
+</a>      </li>
+
+      <li class="UnifiedNav-listItem" data-unified-nav-dropdown-component="">
+        <a class="UnifiedNav-link" data-unified-nav-dropdown-trigger="true" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04#">
+          Support
+
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32" class="UnifiedNavDropdown-chevron">
+  <path d="M31.296 7.68c-.256-.32-.704-.512-1.216-.512-.448 0-.896.192-1.216.512L16 20.736 3.2 7.68c-.256-.32-.704-.512-1.216-.512-.448 0-.896.192-1.216.448S.256 8.32.256 8.768c0 .512.192.96.512 1.28L14.72 24.32c.32.32.704.512 1.152.512.256 0 .512-.064.768-.192.128-.064.256-.128.384-.128l.128-.064 14.016-14.336c.768-.64.704-1.728.128-2.432z"></path>
+</svg>
+
+</a>
+        <div class="UnifiedNavDropdown UnifiedNavDropdown--small UnifiedNavDropdown--right" data-unified-nav-dropdown-content="">
+  <ul class="UnifiedNavDropdown-list">
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive">
+  <a href="https://www.digitalocean.com/docs/">
+    <div class="UnifiedNavDropdown-link UnifiedNavDropdown-link--small">
+      <div class="UnifiedNavDropdown-link-icon UnifiedNavDropdown-link-icon">
+        <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/documentation-ef55fa74bbda23e1bc80f47bc87d1946.svg">
+      </div>
+      <div class="UnifiedNavDropdown-link-content">
+        <p class="UnifiedNavDropdown-link-contentTitle">
+          Documentation
+        </p>
+      </div>
+    </div>
+</a></li>
+
+
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive">
+  <a href="https://www.digitalocean.com/company/contact/">
+    <div class="UnifiedNavDropdown-link UnifiedNavDropdown-link--small">
+      <div class="UnifiedNavDropdown-link-icon UnifiedNavDropdown-link-icon">
+        <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/Support-e610eba9184efb6701d0da90b5a8d86b.svg">
+      </div>
+      <div class="UnifiedNavDropdown-link-content">
+        <p class="UnifiedNavDropdown-link-contentTitle">
+          Contact Support
+        </p>
+      </div>
+    </div>
+</a></li>
+
+
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive">
+  <a href="https://status.digitalocean.com/">
+    <div class="UnifiedNavDropdown-link UnifiedNavDropdown-link--small">
+      <div class="UnifiedNavDropdown-link-icon UnifiedNavDropdown-link-icon">
+        <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/Network-Status-b981a587ed9cd13e5d9e26c8ed8d9ef7.svg">
+      </div>
+      <div class="UnifiedNavDropdown-link-content">
+        <p class="UnifiedNavDropdown-link-contentTitle">
+          Network Status
+        </p>
+      </div>
+    </div>
+</a></li>
+
+  </ul>
+</div>
+
+      </li>
+
+        <li class="UnifiedNav-listItem" data-unified-nav-dropdown-component="">
+          <a class="unified-nav-shims__account UnifiedNav-link" data-unified-nav-dropdown-trigger="true" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04#">
+            <div class="UnifiedNavAvatar ">
+              <img alt="sarpixo" class="avatar avatar-small" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/080ece3e9b73bed4173668664c51de4f" width="80" height="80">
+              <span class="unified-nav-shims__avatar-name">
+                sarpixo
+              </span>
+            </div>
+            <div class="unified-nav-shims__chevron">
+              <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32" class="UnifiedNavDropdown-chevron">
+  <path d="M31.296 7.68c-.256-.32-.704-.512-1.216-.512-.448 0-.896.192-1.216.512L16 20.736 3.2 7.68c-.256-.32-.704-.512-1.216-.512-.448 0-.896.192-1.216.448S.256 8.32.256 8.768c0 .512.192.96.512 1.28L14.72 24.32c.32.32.704.512 1.152.512.256 0 .512-.064.768-.192.128-.064.256-.128.384-.128l.128-.064 14.016-14.336c.768-.64.704-1.728.128-2.432z"></path>
+</svg>
+
+            </div>
+
+            </a><div class="UnifiedNavDropdown UnifiedNavDropdown--small UnifiedNavDropdown--right" data-unified-nav-dropdown-content=""><a class="unified-nav-shims__account UnifiedNav-link" data-unified-nav-dropdown-trigger="true" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04#">
+  </a><ul class="UnifiedNavDropdown-list"><a class="unified-nav-shims__account UnifiedNav-link" data-unified-nav-dropdown-trigger="true" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04#">
+    </a><li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive"><a class="unified-nav-shims__account UnifiedNav-link" data-unified-nav-dropdown-trigger="true" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04#">
+      </a><a href="https://www.digitalocean.com/community/users/sarpixo">
+        <div class="UnifiedNavDropdown-link UnifiedNavDropdown-link--small">
+          <div class="UnifiedNavDropdown-link-icon UnifiedNavDropdown-link-icon">
+            <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/icon-user-284154d3adfb65d458b6869715d3fad8.svg">
+          </div>
+
+          <div class="UnifiedNavDropdown-link-content">
+            <p class="UnifiedNavDropdown-link-contentTitle">
+              Profile
+            </p>
+          </div>
+        </div>
+</a>    </li>
+
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive">
+      <a href="https://www.digitalocean.com/community/users/sarpixo/subscriptions">
+        <div class="UnifiedNavDropdown-link UnifiedNavDropdown-link--small">
+          <div class="UnifiedNavDropdown-link-icon UnifiedNavDropdown-link-icon">
+            <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/icon-subscriptions-d3e53c8d5caf67888892b6ff4d55e024.svg">
+          </div>
+
+          <div class="UnifiedNavDropdown-link-content">
+            <p class="UnifiedNavDropdown-link-contentTitle">
+              Subscriptions
+            </p>
+          </div>
+        </div>
+</a>    </li>
+
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive">
+      <a href="https://www.digitalocean.com/community/notifications">
+        <div class="UnifiedNavDropdown-link UnifiedNavDropdown-link--small">
+          <div class="UnifiedNavDropdown-link-icon UnifiedNavDropdown-link-icon">
+            <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/icon-notifications-a87b987a6816f8f8b2b2e7a0331ede0d.svg">
+          </div>
+
+          <div class="UnifiedNavDropdown-link-content">
+            <p class="UnifiedNavDropdown-link-contentTitle">
+              Notifications
+            </p>
+          </div>
+        </div>
+</a>    </li>
+
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive">
+      <a href="https://www.digitalocean.com/community/users/sarpixo?isEditing=true">
+        <div class="UnifiedNavDropdown-link UnifiedNavDropdown-link--small">
+          <div class="UnifiedNavDropdown-link-icon UnifiedNavDropdown-link-icon">
+            <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/icon-settings-5060c0e82cd439d1b7a5705f1ddae560.svg">
+          </div>
+
+          <div class="UnifiedNavDropdown-link-content">
+            <p class="UnifiedNavDropdown-link-contentTitle">
+              Account Settings
+            </p>
+          </div>
+        </div>
+</a>    </li>
+
+    <li class="UnifiedNavDropdown-item UnifiedNavDropdown-item--interactive">
+      <a id="log-out" rel="nofollow" data-method="delete" href="https://www.digitalocean.com/community/auth">
+        <div class="UnifiedNavDropdown-link UnifiedNavDropdown-link--small">
+          <div class="UnifiedNavDropdown-link-icon UnifiedNavDropdown-link-icon">
+            <img alt="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/icon-sign-out-32b13bae1e05174f39270ed59ed9a4da.svg">
+          </div>
+
+          <div class="UnifiedNavDropdown-link-content">
+            <p class="UnifiedNavDropdown-link-contentTitle">
+              Log Out
+            </p>
+          </div>
+        </div>
+</a>    </li>
+  </ul>
+</div>
+
+        </li>
+    </ul>
+  </nav>
+</div>
+
+
+  <div class="legacy-header ">
+    <div class="flash-container">
+      
+    </div>
+
+    <div class="wrapper">
+      
+    </div>
+  </div>
+</header>
+
+
+      
+
+      <div class="wrapper layout-wrapper">
+
+        
+
+
+
+
+
+
+
+
+
+<div class="section-content section-content-growable content Tutorial-content content-has-mobile-image">
+  <div class="postable-info-bar-container">
+  <div class="postable-info-bar">
+    <div class="author-byline">
+      
+    </div>
+
+    <div class="right-section">
+      
+
+        <div class="section-item section-item-translations">
+          <div class="content-translations">
+  <div class="current-language">
+    <a href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04#" title="English" data-toggle="modal" data-target="#translation-modal">
+      <span class="language "></span>
+      <span class="icon icon-arrow-up"></span>
+      <span class="icon icon-arrow-down"></span>
+    </a>
+  </div>
+</div>
+
+
+
+        </div>
+
+      <div class="section-item section-item-subscribe">
+  <span class="opt-in-switch off">
+    <span class="subscribe-label">
+      <span class="icon icon-subscribe"></span>
+      <span class="subscription-label subscribe">Subscribe</span>
+      <span class="icon icon-subscribed"></span>
+      <span class="subscription-label subscribed">Subscribed</span>
+    </span>
+    <a class="mini-switch-container" data-remote="true" rel="nofollow" data-method="patch" href="https://www.digitalocean.com/community/subscriptions/toggle?subscribable_id=2612&amp;subscribable_type=Tutorial"><div class="mini-switch off"><div class="switch-handle"></div></div></a>
+  </span>
+</div>
+
+<div class="section-item social-sharing-item">
+  <div class="sharing">
+  <a class="share-button" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04#" data-toggle="modal" data-target="#share-modal">
+    <span class="icon icon-share-square"></span>
+    <span class="share-button-text">Share</span>
+  </a>
+</div>
+
+</div>
+
+        <div class="section-item table-of-contents-triggers"><div class="toc-trigger-mobile" data-toggle="modal" data-target="#contents-modal">
+  <a href="javascript:void(0);">
+    <span class="icon icon-contents"></span>
+    <span class="title">Contents</span>
+    <span class="icon icon-arrow-down"></span>
+  </a>
+</div>
+
+</div>
+
+    </div>
+  </div>
+</div>
+
+
+    <img alt="How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04" title="How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04" class="tutorial-image-mobile" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/Let&#39;s_Encrypt_nginx_tw_mostov.jpg">
+
+  <div class="container tutorial-header">
+      <img alt="How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04" title="How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04" class="tutorial-image" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/Let&#39;s_Encrypt_nginx_tw_mostov.jpg">
+
+      <div class="info-cta">
+    <a class="icon-close-light" href="javascript:void();"></a>
+    We hope you find this tutorial helpful. In addition to guides like this one, we provide simple cloud infrastructure for developers. <a href="https://www.digitalocean.com/?utm_medium=community&amp;utm_source=community_gencta&amp;utm_campaign=needaserver&amp;utm_content=how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04">
+        Learn more →
+</a>  </div>
+
+
+    <button name="button" type="button" class="new-upvote-button new-upvote-upvoted" data-include-caret="true" data-upvotable-id="2612" data-upvotable-type="Tutorial" data-upvote-id="81558"><span class="icon new-upvote-icon"><svg class="svg-icon svg-icon-upvote-full"><use xlink:href="https://www.digitalocean.com/assets/community/icon-sprite-d76eb75d70ccf8ffb4c0b47b7dbc88ca.svg#icon-upvote-full"></use></svg></span><span class="new-upvote-count">81</span></button>
+
+    <h1 class="content-title Tutorial-header">
+      <button type="button" class="Button--reset Tutorial-headerButton " data-toggle="tooltip" title="" data-js="markAsComplete" data-tutorialinteraction="" data-tutorialsingle="" data-original-title="Mark as Complete">
+        <svg class="svg-icon svg-icon-completed"><use xlink:href="https://www.digitalocean.com/assets/community/icon-sprite-d76eb75d70ccf8ffb4c0b47b7dbc88ca.svg#icon-completed"></use></svg>
+      </button> How To Secure Nginx with Let's Encrypt on Ubuntu 18.04
+    </h1>
+
+    <span class="meta-section timestamp"><span class="tutorial-date-text">Posted</span><span class="tutorial-date">April 27, 2018</span></span>
+
+    <span class="meta-section pageviews"><span class="icon icon-eye v-mid"></span><span class="views-count v-mid">94k</span><span class="sr-only"> views</span></span>
+
+    <span class="meta-section tags">
+      <a class="tag" href="https://www.digitalocean.com/community/tags/let-s-encrypt?type=tutorials">Let's Encrypt</a> <a class="tag" href="https://www.digitalocean.com/community/tags/nginx?type=tutorials">Nginx</a>
+      <a class="tag" href="https://www.digitalocean.com/community/tags/ubuntu-18-04?type=tutorials">Ubuntu 18.04</a>
+    </span>
+  </div>
+
+  <div class="tutorial-authors">
+    <div class="postable-info-bar-container">
+  <ul class="postable-info-bar">
+      <li class="author-byline">
+        <a href="https://www.digitalocean.com/community/users/hazelnut">
+            <div class="tutorial-author-avatar">
+              <div class="mod-avatar mod-avatar-small"><img class="avatar avatar-small" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/6cbcddbff2a699eb6c34ad6c4ca1a211b4e173a0.jpg" alt="6cbcddbff2a699eb6c34ad6c4ca1a211b4e173a0"><span class="mod-star" title="" data-toggle="tooltip" data-container="body" data-original-title="MOD"><span class="mod-star-icon"></span></span></div>
+            </div>
+
+          <div class="author-and-date">
+            <div class="tutorial-author">
+              <div class="by">By: </div>
+              Hazel Virdó
+            </div>
+          </div>
+</a>      </li>
+      <li class="author-byline">
+        <a href="https://www.digitalocean.com/community/users/katjuell">
+            <div class="tutorial-author-avatar">
+              <div class="mod-avatar mod-avatar-small"><img class="avatar avatar-small" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/748ce760fc8ab2840a415f65ee0d674c24845854.jpg" alt="748ce760fc8ab2840a415f65ee0d674c24845854"><span class="mod-star" title="" data-toggle="tooltip" data-container="body" data-original-title="MOD"><span class="mod-star-icon"></span></span></div>
+            </div>
+
+          <div class="author-and-date">
+            <div class="tutorial-author">
+              <div class="by">By: </div>
+              Kathleen Juell
+            </div>
+          </div>
+</a>      </li>
+  </ul>
+</div>
+
+  </div>
+
+    <div class="container versioned-tutorial-group-navigation" data-versioned-tutorial-group-navigation="" style="height: 58px;">
+  <div class="versioned-tutorial-group-navigation__header" data-versioned-tutorial-group-navigation-header="">
+    <h5 class="versioned-tutorial-group-navigation__heading">
+      Not using <strong>Ubuntu 18.04</strong>? Choose a different version:
+    </h5>
+    <span class="versioned-tutorial-group-navigation__arrow">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 105.565 60.872"><path d="M2.526 46.087c-3.37 3.382-3.37 8.868 0 12.246 3.37 3.386 8.832 3.386 12.202 0l43.384-43.547c3.37-3.382 3.37-8.87 0-12.246-3.37-3.386-8.833-3.386-12.202 0L2.526 46.087z" fill="#fff"></path><path d="M90.835 58.333c3.37 3.386 8.833 3.386 12.202 0 3.37-3.378 3.37-8.864 0-12.246L59.654 2.54c-3.37-3.386-8.832-3.386-12.202 0-3.37 3.377-3.37 8.864 0 12.246l43.383 43.547z" fill="#fff"></path></svg>
+
+    </span>
+  </div>
+  <div class="versioned-tutorial-group-navigation__body" data-versioned-tutorial-group-navigation-body="">
+    <ul class="versioned-tutorial-group-navigation__list">
+    <li class="versioned-tutorial-group-navigation__list-item">
+  <a class="versioned-tutorial-group-navigation__link" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-centos-7">
+    CentOS 7
+    <span class="icon-arrow-down versioned-tutorial-group-navigation__link-arrow"></span>
+</a></li>
+<li class="versioned-tutorial-group-navigation__list-item">
+  <a class="versioned-tutorial-group-navigation__link" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-debian-9">
+    Debian 9
+    <span class="icon-arrow-down versioned-tutorial-group-navigation__link-arrow"></span>
+</a></li>
+<li class="versioned-tutorial-group-navigation__list-item">
+  <a class="versioned-tutorial-group-navigation__link" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-debian-8">
+    Debian 8
+    <span class="icon-arrow-down versioned-tutorial-group-navigation__link-arrow"></span>
+</a></li>
+<li class="versioned-tutorial-group-navigation__list-item">
+  <a class="versioned-tutorial-group-navigation__link" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04">
+    Ubuntu 16.04
+    <span class="icon-arrow-down versioned-tutorial-group-navigation__link-arrow"></span>
+</a></li>
+<li class="versioned-tutorial-group-navigation__list-item">
+  <a class="versioned-tutorial-group-navigation__link" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-14-04">
+    Ubuntu 14.04
+    <span class="icon-arrow-down versioned-tutorial-group-navigation__link-arrow"></span>
+</a></li>
+
+    <li class="versioned-tutorial-group-navigation__list-item">
+  <a data-tutorial-request="" data-distribution-version-id="12" data-versioned-tutorial-group-id="22" href="javascript:;" class="versioned-tutorial-group-navigation__link versioned-tutorial-group-navigation__link--unavailable">
+    Automated: Docker
+    <small class="versioned-tutorial-group-navigation__request" data-tutorial-request-status-indicator="">request</small>
+  </a>
+</li>
+<li class="versioned-tutorial-group-navigation__list-item">
+  <a data-tutorial-request="" data-distribution-version-id="14" data-versioned-tutorial-group-id="22" href="javascript:;" class="versioned-tutorial-group-navigation__link versioned-tutorial-group-navigation__link--unavailable">
+    Automated: Bash
+    <small class="versioned-tutorial-group-navigation__request" data-tutorial-request-status-indicator="">request</small>
+  </a>
+</li>
+<li class="versioned-tutorial-group-navigation__list-item">
+  <a data-tutorial-request="" data-distribution-version-id="13" data-versioned-tutorial-group-id="22" href="javascript:;" class="versioned-tutorial-group-navigation__link versioned-tutorial-group-navigation__link--unavailable">
+    Automated: Ansible
+    <small class="versioned-tutorial-group-navigation__request" data-tutorial-request-status-indicator="">request</small>
+  </a>
+</li>
+
+      <li class="versioned-tutorial-group-navigation__list-item"></li>
+    </ul>
+  </div>
+</div>
+
+
+
+    <div class="content-body tutorial-content" data-growable-markdown="">
+      <p><em>A previous version of this tutorial was written by <a href="https://www.digitalocean.com/community/users/hazelnut">Hazel Virdó</a></em></p>
+
+<h3 id="introduction">Introduction</h3>
+
+<p>Let's Encrypt is a Certificate Authority (CA) that provides an easy way to obtain and install free <a href="https://www.digitalocean.com/community/tutorials/openssl-essentials-working-with-ssl-certificates-private-keys-and-csrs">TLS/SSL certificates</a>, thereby enabling encrypted HTTPS on web servers. It simplifies the process by providing a software client, Certbot, that attempts to automate most (if not all) of the required steps. Currently, the entire process of obtaining and installing a certificate is fully automated on both Apache and Nginx.</p>
+
+<p>In this tutorial, you will use Certbot to obtain a free SSL certificate for Nginx on Ubuntu 18.04 and set up your certificate to renew automatically.</p>
+
+<p>This tutorial will use a separate Nginx server block file instead of the default file. <a href="https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-ubuntu-18-04#step-5-setting-up-server-blocks-(recommended)">We recommend</a> creating new Nginx server block files for each domain because it helps to avoid common mistakes and maintains the default files as a fallback configuration. </p>
+
+<div name="prerequisites" data-unique="prerequisites"></div><h2 id="prerequisites">Prerequisites</h2>
+
+<p>To follow this tutorial, you will need:</p>
+
+<ul>
+<li><p>One Ubuntu 18.04 server set up by following this <a href="https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-18-04">initial server setup for Ubuntu 18.04</a> tutorial, including a sudo non-root user and a firewall.</p></li>
+<li><p>A fully registered domain name. This tutorial will use <strong>example.com</strong> throughout. You can purchase a domain name on <a href="https://namecheap.com/">Namecheap</a>, get one for free on <a href="http://www.freenom.com/en/index.html">Freenom</a>, or use the domain registrar of your choice.</p></li>
+<li><p>Both of the following DNS records set up for your server. You can follow <a href="https://www.digitalocean.com/community/tutorials/an-introduction-to-digitalocean-dns">this introduction to DigitalOcean DNS</a> for details on how to add them.</p>
+
+<ul>
+<li>An A record with <code><span class="highlight">example.com</span></code> pointing to your server's public IP address.</li>
+<li>An A record with <code>www.<span class="highlight">example.com</span></code> pointing to your server's public IP address.</li>
+</ul></li>
+<li><p>Nginx installed by following <a href="https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-ubuntu-18-04">How To Install Nginx on Ubuntu 18.04</a>. Be sure that you have a <a href="https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-ubuntu-18-04#step-5-setting-up-server-blocks-(recommended)">server block</a> for your domain. This tutorial will use <code>/etc/nginx/sites-available/<span class="highlight">example.com</span></code> as an example.</p></li>
+</ul>
+
+<div name="step-1-—-installing-certbot" data-unique="step-1-—-installing-certbot"></div><h2 id="step-1-—-installing-certbot">Step 1 — Installing Certbot</h2>
+
+<p>The first step to using Let's Encrypt to obtain an SSL certificate is to install the Certbot software on your server.</p>
+
+<p>Certbot is in very active development, so the Certbot packages provided by Ubuntu tend to be outdated. However, the Certbot developers maintain a Ubuntu software repository with up-to-date versions, so we'll use that repository instead.</p>
+
+<p>First, add the repository:</p>
+<pre class="code-pre command"><code langs=""><ul class="prefixed"><li class="line" prefix="$">sudo add-apt-repository ppa:certbot/certbot
+</li></ul></code></pre>
+<p>You'll need to press <code>ENTER</code> to accept. </p>
+
+<p>Install Certbot's Nginx package with <code>apt</code>:</p>
+<pre class="code-pre command"><code langs=""><ul class="prefixed"><li class="line" prefix="$">sudo apt install python-certbot-nginx
+</li></ul></code></pre>
+<p>Certbot is now ready to use, but in order for it to configure SSL for Nginx, we need to verify some of Nginx's configuration.</p>
+
+<div name="step-2-—-confirming-nginx&#39;s-configuration" data-unique="step-2-—-confirming-nginx&#39;s-configuration"></div><h2 id="step-2-—-confirming-nginx-39-s-configuration">Step 2 — Confirming Nginx's Configuration</h2>
+
+<p>Certbot needs to be able to find the correct <code>server</code> block in your Nginx configuration for it to be able to automatically configure SSL. Specifically, it does this by looking for a <code>server_name</code> directive that matches the domain you request a certificate for.</p>
+
+<p>If you followed the <a href="https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-ubuntu-18-04#step-5-setting-up-server-blocks-(recommended)">server block set up step in the Nginx installation tutorial</a>, you should have a server block for your domain at <code>/etc/nginx/sites-available/<span class="highlight">example.com</span></code> with the <code>server_name</code> directive already set appropriately.</p>
+
+<p>To check, open the server block file for your domain using <code>nano</code> or your favorite text editor:</p>
+<pre class="code-pre command"><code langs=""><ul class="prefixed"><li class="line" prefix="$">sudo nano /etc/nginx/sites-available/<span class="highlight">example.com</span>
+</li></ul></code></pre>
+<p>Find the existing <code>server_name</code> line. It should look like this:</p>
+<div class="code-label " title="/etc/nginx/sites-available/example.com">/etc/nginx/sites-available/example.com</div><pre class="code-pre "><code class="code-highlight language-nginx hljs ">...
+<span class="hljs-title">server_name</span> <span class="highlight">example.com</span> www.<span class="highlight">example.com</span>;
+...
+</code></pre>
+<p>If it does, exit your editor and move on to the next step.</p>
+
+<p>If it doesn't, update it to match. Then save the file, quit your editor, and verify the syntax of your configuration edits:</p>
+<pre class="code-pre command"><code langs=""><ul class="prefixed"><li class="line" prefix="$">sudo nginx -t
+</li></ul></code></pre>
+<p>If you get an error, reopen the server block file and check for any typos or missing characters. Once your configuration file's syntax is correct, reload Nginx to load the new configuration:</p>
+<pre class="code-pre command"><code langs=""><ul class="prefixed"><li class="line" prefix="$">sudo systemctl reload nginx
+</li></ul></code></pre>
+<p>Certbot can now find the correct <code>server</code> block and update it.</p>
+
+<p>Next, let's update the firewall to allow HTTPS traffic.</p>
+
+<div name="step-3-—-allowing-https-through-the-firewall" data-unique="step-3-—-allowing-https-through-the-firewall"></div><h2 id="step-3-—-allowing-https-through-the-firewall">Step 3 — Allowing HTTPS Through the Firewall</h2>
+
+<p>If you have the <code>ufw</code> firewall enabled, as recommended by the prerequisite guides, you'll need to adjust the settings to allow for HTTPS traffic. Luckily, Nginx registers a few profiles with <code>ufw</code> upon installation.</p>
+
+<p>You can see the current setting by typing:</p>
+<pre class="code-pre command"><code langs=""><ul class="prefixed"><li class="line" prefix="$">sudo ufw status
+</li></ul></code></pre>
+<p>It will probably look like this, meaning that only HTTP traffic is allowed to the web server:</p>
+<pre class="code-pre "><code langs=""><div class="secondary-code-label " title="Output">Output</div>Status: active
+
+To                         Action      From
+--                         ------      ----
+OpenSSH                    ALLOW       Anywhere                  
+Nginx HTTP                 ALLOW       Anywhere                  
+OpenSSH (v6)               ALLOW       Anywhere (v6)             
+Nginx HTTP (v6)            ALLOW       Anywhere (v6)
+</code></pre>
+<p>To additionally let in HTTPS traffic, allow the Nginx Full profile and delete the redundant Nginx HTTP profile allowance:</p>
+<pre class="code-pre command"><code langs=""><ul class="prefixed"><li class="line" prefix="$">sudo ufw allow 'Nginx Full'
+</li><li class="line" prefix="$">sudo ufw delete allow 'Nginx HTTP'
+</li></ul></code></pre>
+<p>Your status should now look like this:</p>
+<pre class="code-pre command"><code langs=""><ul class="prefixed"><li class="line" prefix="$">sudo ufw status
+</li></ul></code></pre><pre class="code-pre "><code langs=""><div class="secondary-code-label " title="Output">Output</div>Status: active
+
+To                         Action      From
+--                         ------      ----
+OpenSSH                    ALLOW       Anywhere
+Nginx Full                 ALLOW       Anywhere
+OpenSSH (v6)               ALLOW       Anywhere (v6)
+Nginx Full (v6)            ALLOW       Anywhere (v6)
+</code></pre>
+<p>Next, let's run Certbot and fetch our certificates.</p>
+
+<div name="step-4-—-obtaining-an-ssl-certificate" data-unique="step-4-—-obtaining-an-ssl-certificate"></div><h2 id="step-4-—-obtaining-an-ssl-certificate">Step 4 — Obtaining an SSL Certificate</h2>
+
+<p>Certbot provides a variety of ways to obtain SSL certificates through plugins. The Nginx plugin will take care of reconfiguring Nginx and reloading the config whenever necessary. To use this plugin, type the following:</p>
+<pre class="code-pre command"><code langs=""><ul class="prefixed"><li class="line" prefix="$">sudo certbot --nginx -d <span class="highlight">example.com</span> -d <span class="highlight">www.example.com</span>
+</li></ul></code></pre>
+<p>This runs <code>certbot</code> with the <code>--nginx</code> plugin, using <code>-d</code> to specify the names we'd like the certificate to be valid for.</p>
+
+<p>If this is your first time running <code>certbot</code>, you will be prompted to enter an email address and agree to the terms of service. After doing so, <code>certbot</code> will communicate with the Let's Encrypt server, then run a challenge to verify that you control the domain you're requesting a certificate for.</p>
+
+<p>If that's successful, <code>certbot</code> will ask how you'd like to configure your HTTPS settings.</p>
+<pre class="code-pre "><code langs=""><div class="secondary-code-label " title="Output">Output</div>Please choose whether or not to redirect HTTP traffic to HTTPS, removing HTTP access.
+-------------------------------------------------------------------------------
+1: No redirect - Make no further changes to the webserver configuration.
+2: Redirect - Make all requests redirect to secure HTTPS access. Choose this for
+new sites, or if you're confident your site works on HTTPS. You can undo this
+change by editing your web server's configuration.
+-------------------------------------------------------------------------------
+Select the appropriate number [1-2] then [enter] (press 'c' to cancel):
+</code></pre>
+<p>Select your choice then hit <code>ENTER</code>. The configuration will be updated, and Nginx will reload to pick up the new settings. <code>certbot</code> will wrap up with a message telling you the process was successful and where your certificates are stored:</p>
+<pre class="code-pre "><code langs=""><div class="secondary-code-label " title="Output">Output</div>IMPORTANT NOTES:
+ - Congratulations! Your certificate and chain have been saved at:
+   /etc/letsencrypt/live/<span class="highlight">example.com</span>/fullchain.pem
+   Your key file has been saved at:
+   /etc/letsencrypt/live/<span class="highlight">example.com</span>/privkey.pem
+   Your cert will expire on 2018-07-23. To obtain a new or tweaked
+   version of this certificate in the future, simply run certbot again
+   with the "certonly" option. To non-interactively renew *all* of
+   your certificates, run "certbot renew"
+ - Your account credentials have been saved in your Certbot
+   configuration directory at /etc/letsencrypt. You should make a
+   secure backup of this folder now. This configuration directory will
+   also contain certificates and private keys obtained by Certbot so
+   making regular backups of this folder is ideal.
+ - If you like Certbot, please consider supporting our work by:
+
+   Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
+   Donating to EFF:                    https://eff.org/donate-le
+
+</code></pre>
+<p>Your certificates are downloaded, installed, and loaded. Try reloading your website using <code>https://</code> and notice your browser's security indicator. It should indicate that the site is properly secured, usually with a green lock icon. If you test your server using the <a href="https://www.ssllabs.com/ssltest/">SSL Labs Server Test</a>, it will get an <strong>A</strong> grade.</p>
+
+<p>Let's finish by testing the renewal process.</p>
+
+<div name="step-5-—-verifying-certbot-auto-renewal" data-unique="step-5-—-verifying-certbot-auto-renewal"></div><h2 id="step-5-—-verifying-certbot-auto-renewal">Step 5 — Verifying Certbot Auto-Renewal</h2>
+
+<p>Let's Encrypt's certificates are only valid for ninety days. This is to encourage users to automate their certificate renewal process. The <code>certbot</code> package we installed takes care of this for us by adding a renew script to <code>/etc/cron.d</code>. This script runs twice a day and will automatically renew any certificate that's within thirty days of expiration.</p>
+
+<p>To test the renewal process, you can do a dry run with <code>certbot</code>:</p>
+<pre class="code-pre command"><code langs=""><ul class="prefixed"><li class="line" prefix="$">sudo certbot renew --dry-run
+</li></ul></code></pre>
+<p>If you see no errors, you're all set. When necessary, Certbot will renew your certificates and reload Nginx to pick up the changes. If the automated renewal process ever fails, Let’s Encrypt will send a message to the email you specified, warning you when your certificate is about to expire.</p>
+
+<div name="conclusion" data-unique="conclusion"></div><h2 id="conclusion">Conclusion</h2>
+
+<p>In this tutorial, you installed the Let's Encrypt client <code>certbot</code>, downloaded SSL certificates for your domain, configured Nginx to use these certificates, and set up automatic certificate renewal. If you have further questions about using Certbot, <a href="https://certbot.eff.org/docs/">their documentation</a> is a good place to start.</p>
+
+    </div>
+</div>
+
+<div class="tutorial-footer">
+  <div class="tutorial-footer-details">
+
+  <div class="postable-info-bar-container">
+  <div class="postable-info-bar">
+    <div class="author-byline">
+      <div class="postable-info-bar-container">
+  <ul class="postable-info-bar">
+      <li class="author-byline">
+        <a href="https://www.digitalocean.com/community/users/hazelnut">
+            <div class="tutorial-author-avatar">
+              <div class="mod-avatar mod-avatar-small"><img class="avatar avatar-small" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/6cbcddbff2a699eb6c34ad6c4ca1a211b4e173a0.jpg" alt="6cbcddbff2a699eb6c34ad6c4ca1a211b4e173a0"><span class="mod-star" title="" data-toggle="tooltip" data-container="body" data-original-title="MOD"><span class="mod-star-icon"></span></span></div>
+            </div>
+
+          <div class="author-and-date">
+            <div class="tutorial-author">
+              <div class="by">By: </div>
+              Hazel Virdó
+            </div>
+          </div>
+</a>      </li>
+      <li class="author-byline">
+        <a href="https://www.digitalocean.com/community/users/katjuell">
+            <div class="tutorial-author-avatar">
+              <div class="mod-avatar mod-avatar-small"><img class="avatar avatar-small" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/748ce760fc8ab2840a415f65ee0d674c24845854.jpg" alt="748ce760fc8ab2840a415f65ee0d674c24845854"><span class="mod-star" title="" data-toggle="tooltip" data-container="body" data-original-title="MOD"><span class="mod-star-icon"></span></span></div>
+            </div>
+
+          <div class="author-and-date">
+            <div class="tutorial-author">
+              <div class="by">By: </div>
+              Kathleen Juell
+            </div>
+          </div>
+</a>      </li>
+  </ul>
+</div>
+
+    </div>
+    <div class="right-section">
+      <div class="upvote-container">
+        <button name="button" type="button" class="new-upvote-button new-upvote-upvoted" data-include-caret="false" data-upvotable-id="2612" data-upvotable-type="Tutorial" data-upvote-id="81558"><span class="icon new-upvote-icon"><svg class="svg-icon svg-icon-heart"><use xlink:href="https://www.digitalocean.com/assets/community/icon-sprite-d76eb75d70ccf8ffb4c0b47b7dbc88ca.svg#icon-heart"></use></svg></span><span class="new-upvote-text">Upvote</span><span class="new-upvote-count">81</span></button>
+      </div>
+      <div class="section-item section-item-subscribe">
+  <span class="opt-in-switch off">
+    <span class="subscribe-label">
+      <span class="icon icon-subscribe"></span>
+      <span class="subscription-label subscribe">Subscribe</span>
+      <span class="icon icon-subscribed"></span>
+      <span class="subscription-label subscribed">Subscribed</span>
+    </span>
+    <a class="mini-switch-container" data-remote="true" rel="nofollow" data-method="patch" href="https://www.digitalocean.com/community/subscriptions/toggle?subscribable_id=2612&amp;subscribable_type=Tutorial"><div class="mini-switch off"><div class="switch-handle"></div></div></a>
+  </span>
+</div>
+
+<div class="section-item social-sharing-item">
+  <div class="sharing">
+  <a class="share-button" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04#" data-toggle="modal" data-target="#share-modal">
+    <span class="icon icon-share-square"></span>
+    <span class="share-button-text">Share</span>
+  </a>
+</div>
+
+</div>
+
+    </div>
+  </div>
+</div>
+
+
+  <div class="section-content tutorial-contributors one">
+
+
+  </div>
+</div>
+
+
+  
+  <div class="tutorial-ctas" style="background-position:bottom center; background-repeat-x:repeat; background-image: url(&#39;https://assets.digitalocean.com/labs/btp/kubernetesbg.png?2&#39;), linear-gradient(to bottom, #1e5ff4 1%,#2b3ade 100%);">
+  <div class="section-content">
+    <div class="cta-description">
+      <h2 style="color: rgb(255, 255, 255);"></h2>
+
+      <p style="color: rgb(255, 255, 255); padding: 15px 0px; line-height: 1.3em;"><img src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/k8shard.png" style="max-height:80px;max-width:90%;"><br><span style="font-size:20px;">DigitalOcean Kubernetes is now available. Spin up a cluster today.</span></p>
+
+      <a class="cloud-tutorial-cta" href="https://www.digitalocean.com/products/kubernetes/?utm_source=comm_exp&amp;utm_medium=btp_customers_kubernetes_hard" style="background:#FFF;color:#0069FF;">Get Started</a>
+    </div>
+  </div>
+</div>
+    <div class="related-tutorials">
+    <div class="section-content">
+      <h2>Related Tutorials</h2>
+
+      <ul>
+        <li><a class="related-link" href="https://www.digitalocean.com/community/tutorials/how-to-use-traefik-as-a-reverse-proxy-for-docker-containers-on-centos-7">How To Use Traefik as a Reverse Proxy for Docker Containers on CentOS 7</a></li>
+<li><a class="related-link" href="https://www.digitalocean.com/community/tutorials/how-to-sync-and-share-your-files-with-seafile-on-debian-9">How To Sync and Share Your Files with Seafile on Debian 9</a></li>
+<li><a class="related-link" href="https://www.digitalocean.com/community/tutorials/how-to-deploy-a-php-application-with-kubernetes-on-ubuntu-16-04">How To Deploy a PHP Application with Kubernetes on Ubuntu 16.04</a></li>
+<li><a class="related-link" href="https://www.digitalocean.com/community/tutorials/how-to-install-yunohost-on-debian-9">How To Install YunoHost on Debian 9</a></li>
+<li><a class="related-link" href="https://www.digitalocean.com/community/tutorials/how-to-ensure-code-quality-with-sonarqube-on-ubuntu-18-04">How To Ensure Code Quality with SonarQube on Ubuntu 18.04</a></li>
+
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<div class="content-comments">
+  <div class="section-content">
+    <div class="tutorial commentable" id="tutorial_2612">
+
+  <div class="comments-header">
+    <h4 class="comments-count"><span>28 Comments</span></h4>
+  </div>
+
+  <div class="response response-form">
+  <div class="js-display-on-error flash error hidden"></div>
+
+
+  <form class="content-form " id="new_comment" action="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04/comments" accept-charset="UTF-8" data-remote="true" method="post"><input name="utf8" type="hidden" value="✓">
+
+    <div class="meltdown_wrap" style="height: auto;"><div class="meltdown_topmargin"></div><div class="meltdown_bar"><ul class="meltdown_controls meltdown_controls_preview"><li class="meltdown_control-preview meltdown_control meltdown_controlbutton" title="" data-original-title="Toggle Preview"><span>Preview</span></li></ul><div class="preview-header">Markdown Preview</div><ul class="meltdown_controls meltdown_controls_main"><li class="meltdown_control-bold meltdown_control meltdown_controlbutton" title="" data-original-title="Bold"><span unselectable="on">B</span></li><li class="meltdown_control-italics meltdown_control meltdown_controlbutton" title="" data-original-title="Italics"><span unselectable="on">I</span></li><li class="meltdown_control-h1 meltdown_control meltdown_controlbutton" title="" data-original-title="Header 1"><span unselectable="on">H1</span></li><li class="meltdown_control-h2 meltdown_control meltdown_controlbutton" title="" data-original-title="Header 2"><span unselectable="on">H2</span></li><li class="meltdown_control-h3 meltdown_control meltdown_controlbutton" title="" data-original-title="Header 3"><span unselectable="on">H3</span></li><li class="meltdown_control-ul meltdown_control meltdown_controlbutton" title="" data-original-title="Unordered List"><span unselectable="on">UL</span></li><li class="meltdown_control-ol meltdown_control meltdown_controlbutton" title="" data-original-title="Ordered List"><span unselectable="on">OL</span></li><li class="meltdown_control-link meltdown_control meltdown_controlbutton" title="" data-original-title="Link"><span unselectable="on">Link</span></li><li class="meltdown_control-code meltdown_control meltdown_controlbutton" title="" data-original-title="Code"><span unselectable="on">Code</span></li><li class="meltdown_control-highlight meltdown_control meltdown_controlbutton" title="" data-original-title="Highlight"><span unselectable="on">Highlight</span></li><li class="meltdown_control-table meltdown_control meltdown_controlbutton" title="" data-original-title="Table"><span unselectable="on">Table</span></li></ul></div><div class="meltdown_editor-wrap"><div class="meltdown_editor-deco"><textarea name="comment[content]" id="comment_content" placeholder="Leave a comment..." class="js-comment-content tutorial-comment-field meltdown_editor" data-markdown="true" style="overflow: hidden; overflow-wrap: break-word; resize: none; height: 120px;"></textarea></div></div><div class="meltdown_preview-wrap"><div class="meltdown_preview-wrap2"><div class="meltdown_preview-error-message">Could not load preview. <a href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04#">Try again</a></div><div class="meltdown_preview-loading-message">Loading preview...</div><div class="meltdown_preview content-body"></div></div></div><div class="meltdown_bottommargin"></div></div>
+
+      <div class="response-user-details">
+        <div class="response-avatar">
+          <img alt="sarpixo" class="avatar avatar-small" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/080ece3e9b73bed4173668664c51de4f" width="80" height="80">
+        </div>
+
+        <div class="logged-in">
+          <div class="logged-in-as">Logged in as:</div>
+          <a class="username username-owner" href="https://www.digitalocean.com/community/users/sarpixo">sarpixo</a>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-comment" data-disable-with="Submitting...">
+        Comment
+      </button>
+
+
+        <div class="subscribe-to-post">
+          <input type="checkbox" name="comment[subscribe]" id="comment_subscribe" checked="checked">
+          <label for="comment_subscribe">Notify me of replies to my comment</label>
+        </div>
+
+      <button type="submit" class="submit-comment submit-comment-mobile" data-disable-with="Submitting...">
+        Comment
+      </button>
+
+    <div class="clearfix"></div>
+</form>
+</div>
+
+
+  <div class="comments">
+    <ul class="response-list">
+          <a class="hidden" rel="nofollow" data-remote="true" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04/comments">Load</a>
+    </ul>
+
+      <div class="comments-spinner"><div class="spinner spinner-large">
+  <div class="bounce1"></div>
+  <div class="bounce2"></div>
+  <div class="bounce3"></div>
+  
+</div>
+</div>
+  </div>
+
+  <div class="load-more-container"></div>
+</div>
+
+
+  </div>
+</div>
+
+<div class="creative-commons">
+  <a class="creative-commons-image" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"><img rel="license" alt="Creative Commons License" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/creativecommons-08b32a9279fcd47fcd78ac6a26331389.png"></a>
+    <div class="license-text">This work is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.</div>
+</div>
+
+  <ul class="moderation-actions fixed tutorial-moderation inline">
+    
+
+
+
+
+
+
+
+  </ul>
+
+
+
+
+        <div class="clearfix"></div>
+      </div>
+
+
+      <footer class="Footer">
+  <span class="Footer-logo icon-sammy"></span>
+
+  <div>Copyright © 2019 DigitalOcean™ Inc.</div>
+
+  <ul class="Footer-nav">
+    <li><a href="https://www.digitalocean.com/community">Community</a></li>
+    <li><a href="https://www.digitalocean.com/community/tutorials">Tutorials</a></li>
+    <li><a href="https://www.digitalocean.com/community/questions">Questions</a></li>
+    <li><a href="https://www.digitalocean.com/community/projects">Projects</a></li>
+    <li><a href="https://www.digitalocean.com/community/tags">Tags</a></li>
+    <li><a href="https://www.digitalocean.com/community/newsletter">Newsletter</a></li>
+    <li>
+      <a href="https://www.digitalocean.com/community/tutorials/feed">
+        RSS <span class="icon-rss"></span>
+</a>    </li>
+  </ul>
+
+  <br>
+
+  <ul class="Footer-nav Footer-nav--secondary">
+    <li><a href="https://www.digitalocean.com/products/one-click-apps/">Distros &amp; One-Click Apps</a></li>
+    <li><a href="https://www.digitalocean.com/legal/terms/">Terms, Privacy, &amp; Copyright</a></li>
+    <li><a href="https://www.digitalocean.com/security/">Security</a></li>
+      <li><a data-toggle="modal" data-target="#report-a-bug-modal" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04#">Report a Bug</a></li>
+    <li><a href="https://www.digitalocean.com/write-for-donations">Write for DOnations</a></li>
+    <li><a href="http://store.digitalocean.com/">Shop</a></li>
+  </ul>
+</footer>
+
+
+
+
+
+      
+
+        <div id="profiles-modal" class="modal new-modal fade" style="display: none;">
+  <div class="new-modal-dialog modal-dialog">
+    <div class="new-modal-content">
+      <div class="new-modal-header">
+        <button type="button" class="new-close-button mini-close-button icon icon-close-light" aria-label="close" data-dismiss="modal"></button>
+
+        <img class="new-profile-modal-image" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/newprofilemodal-bc6cf7fa69d3ac765d7dcfa63d37492e.svg" alt="Newprofilemodal">
+
+        <div class="new-modal-heading">
+          Introducing your new profile
+        </div>
+
+        <div class="new-modal-body">
+          <p class="new-modal-message">Get to know your fellow Community members better with profiles. Share your interests and skills with others, and get a bird’s eye view of all of your Community activity.</p>
+
+          <a class="edit-profile-modal-button modal-button button blue-button confirm-button" href="https://www.digitalocean.com/community/users/sarpixo?isEditing=true">Add Info</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+        <div id="research-signup-modal" class="modal new-modal fade" style="display: none;">
+  <div class="new-modal-dialog modal-dialog">
+    <div class="new-modal-content">
+      <div class="new-modal-header">
+        <button type="button" class="new-close-button mini-close-button icon icon-close-light" aria-label="close" data-dismiss="modal"></button>
+        <div class="new-modal-heading">We're excited to work with you!</div>
+        <div class="new-modal-subheading">Fill out the form below and we’ll reach out when we have surveys, usability testing, or other research opportunities for you to participate in.</div>
+      </div>
+
+      <div class="new-modal-body">
+        <div class="research-signup-form">
+          <div class="FormGroup">
+            <div class="FormHeader">
+              <label class="FormLabel FormLabel--inline" for="research-name">Name</label>
+              <span class="FormError FormError-research-name FormError--hidden"></span>
+            </div>
+            <input name="research-name" id="research-name" class="FormInput FormInput-text FormInput-research-name" type="text">
+          </div>
+
+          <div class="FormGroup">
+            <div class="FormHeader">
+              <label class="FormLabel FormLabel--inline" for="research-email">Email</label>
+              <span class="FormError FormError-research-email FormError--hidden"></span>
+            </div>
+
+            <input name="research-email" id="research-email" class="FormInput FormInput-text FormInput-research-email" type="email" value="sarpixo@gmail.com">
+          </div>
+
+          <div class="FormGroup">
+            <div class="FormHeader">
+              <label for="research-message" class="FormLabel">If you could improve one thing in the DigitalOcean Community experience right now, what would it be?</label>
+              <span class="FormError FormError--block FormError-research-message FormError--hidden"></span>
+            </div>
+            <textarea name="research-message" id="research-message" class="FormInput FormInput-research-message" style="overflow: hidden; overflow-wrap: break-word; resize: none; height: 64px;"></textarea>
+          </div>
+        </div>
+
+        <button type="button" class="research-signup-button modal-button button blue-button confirm-button">Sign me up</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+        <div id="research-signup-thanks-modal" class="modal new-modal fade" style="display: none;">
+  <div class="new-modal-dialog modal-dialog">
+    <div class="new-modal-content">
+      <div class="new-modal-header">
+        <button type="button" class="new-close-button mini-close-button icon icon-close-light" aria-label="close" data-dismiss="modal"></button>
+      </div>
+
+      <div class="new-modal-body">
+        <img class="thanks-modal-image" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/community-modal-db8c83d2bdf466138dd48a66cde55135.svg" alt="Community modal"> 
+
+        <div class="new-modal-heading text-center">We'll be in touch!</div>
+        <div class="new-modal-subheading text-center">You’re now on our radar. Sit back and enjoy Community tutorials and Q&amp;A while we put together our next research efforts.</div>
+        <button type="button" data-dismiss="modal" class="thanks-got-it-button modal-button button blue-button confirm-button">Got it</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+      <script>
+    $(function() {
+      VTGNavigationDropdown($('[data-versioned-tutorial-group-navigation]'));
+      createTutorialRequest({
+        $tutorialRequestLinks: $("[data-tutorial-request]"),
+        tutorialRequestStatusSelector: "[data-tutorial-request-status-indicator]",
+        tutorialRequestUrl: "/community/api/tutorial_requests",
+      });
+    });
+  </script>
+
+  <script>
+    $(function() {
+      if (!!window.init_sharing) {
+        window.init_sharing();
+      }
+      new window.NewsletterSignup();
+      new window.GrowableMarkdown({ target: '[data-growable-markdown]' });
+
+      window.Bugsnag.beforeNotify = function(payload, metaData) {
+        // custom logic to determine groupingHash
+        metaData.groupingHash = "tutorialShow";
+      }
+    });
+  </script>
+  <script type="application/ld+json">
+    {"@context":"http://schema.org","@type":"Article","name":"How To Secure Nginx with Let's Encrypt on Ubuntu 18.04","headline":"How To Secure Nginx with Let's Encrypt on Ubuntu 18.04","alternativeHeadline":"How To Secure Nginx with Let's Encrypt on Ubuntu 18.04","description":"In this tutorial, we will show you how to use Let's Encrypt to obtain a free SSL certificate and use it with Nginx on Ubuntu 18.04. We will also show you how to automatically renew your SSL certificate. If you're running a different web server, simply follow your web server's documentation to learn how to use the certificate with your setup.","keywords":"Let's Encrypt,Nginx,April 2018","url":"https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04"},"dateModified":"2018-07-13T19:09:57Z","inLanguage":"en","accessMode":"textual","accessModeSufficient":"textual","isAccessibleForFree":true,"license":"https://creativecommons.org/licenses/by-nc-sa/4.0/","publishingPrinciples":"https://www.digitalocean.com/community/tutorials/technical-recommendations-and-best-practices-for-digitalocean-s-tutorials","author":[{"@type":"Person","name":"Hazel Virdó","@id":"https://www.digitalocean.com/community/users/hazelnut"},{"@type":"Person","name":"Kathleen Juell","@id":"https://www.digitalocean.com/community/users/katjuell"}],"datePublished":"2018-04-27T18:21:03Z","image":{"@type":"ImageObject","url":"https://community-cdn-digitalocean-com.global.ssl.fastly.net/assets/tutorials/images/large/Let's_Encrypt_nginx_tw_mostov.jpg?1529943642","height":375,"width":750},"interactionStatistic":[{"@type":"InteractionCounter","interactionType":"http://schema.org/LikeAction","userInteractionCount":"82"},{"@type":"InteractionCounter","interactionType":"http://schema.org/CommentAction","userInteractionCount":"22"}],"sourceOrganization":{"@type":"Organization","name":"DigitalOcean Community","url":"https://www.digitalocean.com/community"},"publisher":{"@type":"Organization","name":"DigitalOcean","url":"https://www.digitalocean.com","logo":{"@type":"ImageObject","url":"https://assets.digitalocean.com/logos/DO_Logo_horizontal_blue.png","width":351,"height":60}}}
+  </script>
+  <script>
+    $(function() {
+      setTimeout(function(){
+        $.getJSON(
+          'https://assets.digitalocean.com/labs/btp.json',
+          function(data) {
+            new BelowTutorialPanel(data);
+          }
+        );
+      }, 2000);
+    });
+  </script>
+
+  <div id="report-a-bug-modal" class="modal fade mini-modal" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1>Report a Bug</h1>
+          <a class="close-button" data-dismiss="modal" aria-label="close" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04"><span class="icon icon-close-light"></span></a>
+        </div>
+        <div class="modal-body">
+          <div class="report-a-bug-message text-center">Use this form to report bugs related to the Community</div>
+          <div class="report-a-bug-actions do-form">
+            <div class="form-wrap">
+              <form class="new_bug_report" id="new_bug_report" action="https://www.digitalocean.com/community/bug_reports" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="✓"><input type="hidden" name="authenticity_token" value="Ck10UKm9jmsrDGufpq63TEBt2MOv0bpe4hObwgf7+NzLDgWK+ixDNT1mA8f3aDQWQTSw1jb4VwBC8l+UbUsvOA==">
+                <fieldset name="report-a-bug-info">
+                <legend class="sr-only">Report a bug:</legend>
+                  <div class="field">
+                    <label for="bug_reporter_name" class="sr-only">Name</label>
+                    <input placeholder="Name" id="bug_reporter_name" type="text" value="sarpixo" name="bug_report[name]">
+                  </div>
+                  <div class="field">
+                    <label for="bug_reporter_email" class="sr-only">Email</label>
+                    <input name="Email" placeholder="Email" id="bug_reporter_email" required="required" type="text" value="sarpixo@gmail.com">
+                  </div>
+                  <div class="field">
+                    <label for="bug_reporter_message" class="sr-only">Message</label>
+                    <textarea name="Message" placeholder="Message" id="bug_reporter_message" required="required" style="overflow: hidden; overflow-wrap: break-word; resize: none; height: 125px;"></textarea>
+                  </div>
+
+                  <div class="field actions">
+                    <input type="submit" name="commit" value="Submit" class="button">
+                  </div>
+                </fieldset>
+</form>            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+    
+  
+
+<textarea tabindex="-1" aria-hidden="true" ,="" style="position: absolute; top: -999px; left: 0px; right: auto; bottom: auto; border: 0px; padding: 0px; box-sizing: content-box; overflow-wrap: break-word; overflow: hidden; transition: none 0s ease 0s; height: 0px !important; min-height: 0px !important; font-family: proxima-nova, sans-serif; font-size: 17px; font-weight: 400; font-style: normal; letter-spacing: 0px; text-transform: none; word-spacing: 0px; text-indent: 0px; line-height: normal; width: 58px;" class="autosizejs" id="autosizejs"></textarea><a id="scrollUp" href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04#top" style="display: none; position: fixed; z-index: 1000;">Scroll to top</a><div id="scrollUp-active" style="position: absolute; top: 300px; width: 100%; border-top: 1px dotted rgb(0, 255, 255); z-index: 1000;"></div><script type="text/javascript" id="">window.addEventListener("cookieconsent_statuschange",function(){window.dataLayer.push({event:"cc_dismiss"})});function getCookie(a){var b="; "+document.cookie;a=b.split("; "+a+"\x3d");if(2==a.length)return a.pop().split(";").shift()}getCookie("cookieconsent_status")&&window.dataLayer.push({event:"cc_dismiss"});</script>
+<script type="text/javascript" id="" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/js"></script><script type="text/javascript" id="">(function(){try{analytics&&analytics.ready(function(){var c=analytics.user().traits(),a=c.recent||[],d=[$("body").data("tutorial-id")||"",Math.round(new Date/864E5)],e=a.length,b;for(b=0;b<e;b++)if(a[b]instanceof Array&&a[b][0]===d[0]){a.splice(b,1);break}a.unshift(d);5<=a.length&&a.pop();c.recent=a;analytics.user().traits(c)})}catch(c){}})();</script><script type="text/javascript" id="">try{document.addEventListener("copy",function(a){window.getSelection&&$(window.getSelection().anchorNode).parents("pre").length&&analytics.track("Web Interaction",{action:"Code Copy",name:window.getSelection().toString().substring(0,64)+(64<window.getSelection().toString().length?"\u2026":"")})})}catch(a){};</script><style>
+  .righthand-ctas {
+     width: 260px;
+     height: 0px;
+     margin-left: calc(50% + 423px);
+     right: inherit;
+     z-index: 50;
+     opacity: 1;
+  }
+  .righthand-ctas .related-links {
+    background: #e9f2f7;
+    padding: 16px;
+    font-size: 16px;
+  }
+  .righthand-ctas .featured-products {
+    background:#FFF;
+  }
+  .righthand-ctas.table-of-contents:before {
+    content: none;
+  }
+  .righthand-ctas.table-of-contents ul {
+    padding:0;
+  }
+  .righthand-ctas h2 {
+    font-size: 18px;
+    color: #3a3a3a;
+    display:block;
+    padding:8px 0;
+  }
+  .featured-products h2 {
+    border-bottom:1px solid #f4f6f9;
+    padding-top:48px;
+  }
+  .featured-products .UnifiedNavDropdown-link { padding:16px 0; }
+  .righthand-ctas .related-links a { color: #666; }
+  .righthand-ctas .related-links li { padding:8px 0; line-height: 24px}
+</style>
+<script type="text/javascript" id="">try{google_tag_manager["GTM-KHWBBT"].macro(4)({name:"Tutorial Right Rail Kubernetes",audience:function(){return 1350<$(window).width()&&document.querySelector('.tag[href\x3d"/community/tags/kubernetes?type\x3dtutorials"]')},variants:[{name:"Available Now",func:function(){var b=$(".tutorial-image").length?$(".tutorial-image").offset().top:$(".content-title").offset().top,c=$(".outside_viewport .table-of-contents");$('\x3cdiv class\x3d"righthand-ctas table-of-contents"\x3e\x3cdiv class\x3d"featured-products"\x3e\x3ch2\x3eNow Available\x3c/h2\x3e\x3c/div\x3e\x3c/div\x3e').insertAfter("header").end().css({top:b});
+var a=$(".righthand-ctas");$(".featured-products").append('\x3ca href\x3d"/products/kubernetes/"\x3e \x3cdiv class\x3d"UnifiedNavDropdown-link"\x3e \x3cdiv class\x3d"UnifiedNavDropdown-link-icon"\x3e \x3cimg style\x3d"margin-bottom:32px" alt\x3d"" src\x3d"/assets/community/unified-nav/products/kubernetes-f2d12fcd6216cb404dac3a41cfd7a6d3.svg"\x3e \x3c/div\x3e \x3cdiv class\x3d"UnifiedNavDropdown-link-content"\x3e \x3cp class\x3d"UnifiedNavDropdown-link-contentTitle"\x3e Kubernetes \x3c/p\x3e \x3cp class\x3d"UnifiedNavDropdown-link-contentDescription"\x3e Run managed Kubernetes clusters on DigitalOcean.\x3c/p\x3e \x3cspan style\x3d"background:#11a95e;color:#FFF; padding: 0 12px; height: 32px; font-size: 14px; line-height: 32px;display: inline-block; overflow: visible; margin:8px 0 0 0;border: 0; border-radius: 3px;vertical-align: middle; text-align: center; font-weight: 600;"\x3eStart now\x3c/span\x3e \x3c/div\x3e \x3c/div\x3e \x3c/a\x3e');
+a.find("a").attr("data-js","gtm_ab_success");window.setInterval(function(){c.hasClass("sticky")?a.addClass("sticky").css({top:72}):a.removeClass("sticky").css({top:b})},50)}},{name:"Available Now",func:function(){var b=$(".tutorial-image").length?$(".tutorial-image").offset().top:$(".content-title").offset().top,c=$(".outside_viewport .table-of-contents");$('\x3cdiv class\x3d"righthand-ctas table-of-contents"\x3e\x3cdiv class\x3d"featured-products"\x3e\x3ch2\x3eAvailable Now\x3c/h2\x3e\x3c/div\x3e\x3c/div\x3e').insertAfter("header").end().css({top:b});
+var a=$(".righthand-ctas");$(".featured-products").append('\x3ca href\x3d"/products/kubernetes/"\x3e \x3cdiv class\x3d"UnifiedNavDropdown-link"\x3e \x3cdiv class\x3d"UnifiedNavDropdown-link-icon"\x3e \x3cimg style\x3d"margin-bottom:32px" alt\x3d"" src\x3d"/assets/community/unified-nav/products/kubernetes-f2d12fcd6216cb404dac3a41cfd7a6d3.svg"\x3e \x3c/div\x3e \x3cdiv class\x3d"UnifiedNavDropdown-link-content"\x3e \x3cp class\x3d"UnifiedNavDropdown-link-contentTitle"\x3e Kubernetes \x3c/p\x3e \x3cp class\x3d"UnifiedNavDropdown-link-contentDescription"\x3e Run managed Kubernetes clusters on DigitalOcean.\x3c/p\x3e \x3cspan style\x3d"background:#11a95e;color:#FFF; padding: 0 12px; height: 32px; font-size: 14px; line-height: 32px;display: inline-block; overflow: visible; margin:8px 0 0 0;border: 0; border-radius: 3px;vertical-align: middle; text-align: center; font-weight: 600;"\x3eTry Kubernetes\x3c/span\x3e \x3c/div\x3e \x3c/div\x3e \x3c/a\x3e');
+a.find("a").attr("data-js","gtm_ab_success");window.setInterval(function(){c.hasClass("sticky")?a.addClass("sticky").css({top:72}):a.removeClass("sticky").css({top:b})},50)}}]})}catch(b){};</script><iframe scrolling="no" frameborder="0" allowtransparency="true" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/widget_iframe.219ae0a24a0fde13418c38af0499134b.html" title="Twitter settings iframe" style="display: none;"></iframe>
+<script type="text/javascript" id="">window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date);gtag("config","AW-836091520");</script>
+
+<div id="fb-root" class=" fb_reset"><div style="position: absolute; top: -10000px; width: 0px; height: 0px;"><div><iframe name="fb_xdm_frame_https" frameborder="0" allowtransparency="true" allowfullscreen="true" scrolling="no" allow="encrypted-media" id="fb_xdm_frame_https" aria-hidden="true" title="Facebook Cross Domain Communication Frame" tabindex="-1" src="./How To Secure Nginx with Let&#39;s Encrypt on Ubuntu 18.04_files/GMRn6XEBZ06.html" style="border: none;"></iframe></div><div></div></div></div></body></html>
